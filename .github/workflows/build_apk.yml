@@ -19,10 +19,11 @@ jobs:
       - name: Fix and Build
         run: |
           rm -rf android
-          flutter create . --platforms=android --project-name salaama_muslim_jr_sch --org com.salaama.school
+          flutter create . --platforms=android
           flutter pub get
+          dart run flutter_launcher_icons
           flutter build apk --release
       - uses: actions/upload-artifact@v4
         with:
           name: salaama-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/
