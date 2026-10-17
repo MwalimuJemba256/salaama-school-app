@@ -1,5 +1,5 @@
 name: salaama_school_app
-description: SALAAMA MUSLIM JUNIOR SCHOOL - 275 Students Management
+description: SALAAMA MUSLIM JUNIOR SCHOOL - DESTINED TO SUCCEED
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -15,9 +15,18 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
   assets:
     - assets/images/logo.png
     - assets/images/
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: false
+  image_path: "assets/images/logo.png"
+  min_sdk_android: 21
+  web:
+    generate: false
