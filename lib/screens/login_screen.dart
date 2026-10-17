@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
-import 'admin_dashboard.dart';
-import 'teacher_home.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -10,98 +7,146 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController phoneController = TextEditingController();
-  TextEditingController otpController = TextEditingController();
-  String? verificationId;
-  bool codeSent = false;
-  AuthService auth = AuthService();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/images/logo.png', width: 100),
-            SizedBox(height: 20),
-            Text("Login with Job Application Number", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            SizedBox(height: 20),
-            TextField(
-              controller: phoneController,
-              decoration: InputDecoration(labelText: "Phone e.g +256700000001", border: OutlineInputBorder()),
-              keyboardType: TextInputType.phone,
-            ),
-            SizedBox(height: 15),
-            if (codeSent)
-              TextField(
-                controller: otpController,
-                decoration: InputDecoration(labelText: "Enter OTP", border: OutlineInputBorder()),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 30),
+              Center(
+                child: Icon(Icons.school, size: 80, color: Color(0xFF0D2A54)),
               ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF2196F3), minimumSize: Size(double.infinity, 50)),
-              onPressed: () async {
-                if (!codeSent) {
-                  // For testing without Firebase, go directly
-                  // In production, use auth.verifyPhone
-                  try {
-                    await auth.verifyPhone(phoneController.text, (vid) {
-                      setState(() {
-                        verificationId = vid;
-                        codeSent = true;
-                      });
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("OTP Sent")));
-                  } catch (e) {
-                    // If Firebase not configured, allow demo login
-                    _navigateByRole();
-                  }
-                } else {
-                  // Verify OTP
-                  try {
-                    await auth.signInWithOTP(verificationId!, otpController.text);
-                    _navigateByRole();
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
-                  }
-                }
-              },
-              child: Text(codeSent ? "Verify OTP" : "Send OTP", style: TextStyle(color: Colors.white)),
-            ),
-            SizedBox(height: 15),
-            TextButton(
-              onPressed: () => _navigateByRole(isDemo: true),
-              child: Text("Demo Login (No Firebase)"),
-            )
-          ],
+              SizedBox(height: 20),
+              Center(
+                child: Text('SALAAMA MUSLIM\nJUNIOR SCHOOL',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF0D2A54))),
+              ),
+              SizedBox(height: 10),
+              Center(child: Text('Kampala - Uganda', style: TextStyle(color: Colors.grey))),
+              SizedBox(height: 40),
+              Text('Phone Number', style: TextStyle(fontWeight: FontWeight.bold)),
+              SizedBox(height: 8),
+              TextField(
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(
+                  hintText: '+2567XXXXXXXX',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  prefixIcon: Icon(Icons.phone),
+                ),
+              ),
+              SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF0D2A54),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    _goToDemo();
+                  },
+                  child: Text('LOGIN WITH OTP', style: TextStyle(color: Colors.white, fontSize: 16)),
+                ),
+              ),
+              SizedBox(height: 20),
+              Divider(),
+              SizedBox(height: 10),
+              Text('For Testing (No OTP needed):', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
+              SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    _goToDemo();
+                  },
+                  child: Text('DEMO LOGIN - HEAD TEACHER', style: TextStyle(color: Colors.white)),
+                ),
+              ),
+              SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    _goToDemoTeacher();
+                  },
+                  child: Text('DEMO LOGIN - TEACHER', style: TextStyle(color: Colors.white)),
+                ),
+              ),
+              SizedBox(height: 30),
+              Center(child: Text('275 Students • Live Monitoring', style: TextStyle(color: Colors.grey, fontSize: 12))),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _navigateByRole({bool isDemo = false}) async {
-    String phone = phoneController.text.trim();
-    if (phone.isEmpty) phone = "+256700000001";
+  void _goToDemo() {
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DemoAdminScreen()));
+  }
 
-    if (isDemo) {
-      // Demo: If phone ends with 1 -> Admin, else Teacher
-      if (phone.contains("000001")) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AdminDashboard()));
-      } else {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => TeacherHome(teacherPhone: phone, teacherName: "Demo Teacher")));
-      }
-      return;
-    }
+  void _goToDemoTeacher() {
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DemoTeacherScreen()));
+  }
+}
 
-    var result = await auth.getUserRole(phone);
-    if (result == null) {
-      // For new setup, default to admin if first user
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AdminDashboard()));
-    } else if (result['role'] == 'admin') {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AdminDashboard()));
-    } else {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => TeacherHome(teacherPhone: phone, teacherName: result['data']['name'] ?? "Teacher")));
-    }
+class DemoAdminScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('HEAD TEACHER - Admin'), backgroundColor: Color(0xFF0D2A54)),
+      body: Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(Icons.check_circle, size: 100, color: Colors.green),
+          SizedBox(height: 20),
+          Text('LOGIN SUCCESS!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Text('275 Students Live', style: TextStyle(fontSize: 18)),
+          SizedBox(height: 10),
+          Text('Ordinary | Tahfiz | Non-Teaching', style: TextStyle(color: Colors.grey)),
+          SizedBox(height: 30),
+          ElevatedButton(onPressed: () {}, child: Text('View Dashboard')),
+        ]),
+      ),
+    );
+  }
+}
+
+class DemoTeacherScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('TEACHER Dashboard'), backgroundColor: Colors.orange),
+      body: Center(
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(Icons.person, size: 100, color: Colors.orange),
+          SizedBox(height: 20),
+          Text('TEACHER LOGIN SUCCESS!', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Text('Start Class - Islamic / Secular Tabs'),
+          SizedBox(height: 30),
+          ElevatedButton(onPressed: () {}, child: Text('Start Class')),
+        ]),
+      ),
+    );
   }
 }
