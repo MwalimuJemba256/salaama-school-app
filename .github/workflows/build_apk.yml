@@ -19,7 +19,7 @@ jobs:
       - name: Fix and Build
         run: |
           rm -rf android
-          flutter create . --platforms=android
+          flutter create . --project-name salaama_school_app --platforms=android
           flutter pub get
           dart run flutter_launcher_icons
           flutter build apk --release
