@@ -1,0 +1,30 @@
+name: Build APK - Salaama
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build APK Release
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Salaama-APK-Build18
+          path: build/app/outputs/flutter-apk/app-release.apk
