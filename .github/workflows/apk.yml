@@ -15,32 +15,30 @@ jobs:
       - name: Create android folder
         run: flutter create . --platforms=android
 
-      - name: Set compileSdk to 36
+      - name: Fix compileSdk 34 -> 36 everywhere
         run: |
-          echo "Files in android/app:"
-          ls android/app/
-          echo "--- Content ---"
-          cat android/app/build.gradle.kts || cat android/app/build.gradle
-          echo "--- Fixing ---"
-          # Fix both .kts and .gradle files
-          if [ -f android/app/build.gradle.kts ]; then
-            sed -i 's/compileSdkVersion.*/compileSdk = 36/' android/app/build.gradle.kts
-            sed -i 's/compileSdk = .*/compileSdk = 36/' android/app/build.gradle.kts
-            sed -i 's/flutter.compileSdkVersion/36/' android/app/build.gradle.kts
-            sed -i 's/35/36/g' android/app/build.gradle.kts
-            sed -i 's/34/36/g' android/app/build.gradle.kts
-            cat android/app/build.gradle.kts | grep compileSdk
-          fi
-          if [ -f android/app/build.gradle ]; then
-            sed -i 's/34/36/g' android/app/build.gradle
-            sed -i 's/35/36/g' android/app/build.gradle
-          fi
+          # 1. Fix your app
+          sed -i 's/compileSdk.*/compileSdk = 36/' android/app/build.gradle.kts || true
+          sed -i 's/compileSdkVersion.*/compileSdkVersion 36/' android/app/build.gradle || true
+          sed -i 's/35/36/g' android/app/build.gradle.kts || true
+          sed -i 's/34/36/g' android/app/build.gradle.kts || true
+          
+          # 2. Fix file_picker and other plugins in pub cache
+          flutter pub get
+          find ~/.pub-cache -name "build.gradle" -o -name "build.gradle.kts" | xargs grep -l "compileSdk.*34" 2>/dev/null | xargs sed -i 's/34/36/g' 2>/dev/null || true
+          find ~/.pub-cache -name "build.gradle*" | xargs sed -i 's/compileSdk.*34/compileSdk = 36/g; s/compileSdkVersion.*34/compileSdkVersion 36/g; s/34/36/g' 2>/dev/null || true
+          
+          echo "Fixed! Checking:"
+          cat android/app/build.gradle.kts | grep compileSdk
+
+      - name: Upgrade file_picker
+        run: |
+          flutter pub upgrade file_picker
+          flutter pub upgrade flutter_plugin_android_lifecycle
+          flutter pub get
 
       - name: Build APK
-        run: |
-          flutter pub get
-          flutter pub upgrade file_picker
-          flutter build apk --release
+        run: flutter build apk --release
 
       - uses: actions/upload-artifact@v4
         with:
