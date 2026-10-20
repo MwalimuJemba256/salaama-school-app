@@ -12,33 +12,32 @@ jobs:
         with:
           channel: stable
 
-      - name: Find Flutter project
-        run: |
-          find . -name "pubspec.yaml"
-          ls -la
-
       - name: Create android folder
-        run: |
-          PROJECT=$(dirname $(find . -name "pubspec.yaml" | head -n1))
-          echo "Project is in $PROJECT"
-          cd $PROJECT
-          flutter create . --platforms=android
-          echo "PROJECT_DIR=$PROJECT" >> $GITHUB_ENV
+        run: flutter create . --platforms=android
 
       - name: Set compileSdk to 36
         run: |
-          cd ${{ env.PROJECT_DIR }}
-          echo "Fixing in $(pwd)"
+          echo "Files in android/app:"
           ls android/app/
-          sed -i 's/compileSdkVersion 34/compileSdkVersion 36/g' android/app/build.gradle 2>/dev/null || true
-          sed -i 's/compileSdk 34/compileSdk 36/g' android/app/build.gradle 2>/dev/null || true
-          sed -i 's/compileSdk = 34/compileSdk = 36/g' android/app/build.gradle 2>/dev/null || true
-          sed -i 's/34/36/g' android/app/build.gradle
-          cat android/app/build.gradle | grep -A2 -B2 compileSdk || cat android/app/build.gradle
+          echo "--- Content ---"
+          cat android/app/build.gradle.kts || cat android/app/build.gradle
+          echo "--- Fixing ---"
+          # Fix both .kts and .gradle files
+          if [ -f android/app/build.gradle.kts ]; then
+            sed -i 's/compileSdkVersion.*/compileSdk = 36/' android/app/build.gradle.kts
+            sed -i 's/compileSdk = .*/compileSdk = 36/' android/app/build.gradle.kts
+            sed -i 's/flutter.compileSdkVersion/36/' android/app/build.gradle.kts
+            sed -i 's/35/36/g' android/app/build.gradle.kts
+            sed -i 's/34/36/g' android/app/build.gradle.kts
+            cat android/app/build.gradle.kts | grep compileSdk
+          fi
+          if [ -f android/app/build.gradle ]; then
+            sed -i 's/34/36/g' android/app/build.gradle
+            sed -i 's/35/36/g' android/app/build.gradle
+          fi
 
       - name: Build APK
         run: |
-          cd ${{ env.PROJECT_DIR }}
           flutter pub get
           flutter pub upgrade file_picker
           flutter build apk --release
@@ -46,4 +45,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Salaama-School-App-APK
-          path: ${{ env.PROJECT_DIR }}/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
