@@ -11,19 +11,39 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+
+      - name: Find Flutter project
+        run: |
+          find . -name "pubspec.yaml"
+          ls -la
+
       - name: Create android folder
-        run: flutter create . --platforms=android
+        run: |
+          PROJECT=$(dirname $(find . -name "pubspec.yaml" | head -n1))
+          echo "Project is in $PROJECT"
+          cd $PROJECT
+          flutter create . --platforms=android
+          echo "PROJECT_DIR=$PROJECT" >> $GITHUB_ENV
+
       - name: Set compileSdk to 36
         run: |
-          sed -i 's/compileSdkVersion 34/compileSdkVersion 36/g' android/app/build.gradle || true
-          sed -i 's/compileSdk 34/compileSdk 36/g' android/app/build.gradle || true
-          sed -i 's/compileSdk = 34/compileSdk = 36/g' android/app/build.gradle || true
-          sed -i 's/compileSdkVersion = 34/compileSdkVersion = 36/g' android/app/build.gradle || true
-          cat android/app/build.gradle | grep compileSdk
-      - run: flutter pub get
-      - run: flutter pub upgrade file_picker
-      - run: flutter build apk --release
+          cd ${{ env.PROJECT_DIR }}
+          echo "Fixing in $(pwd)"
+          ls android/app/
+          sed -i 's/compileSdkVersion 34/compileSdkVersion 36/g' android/app/build.gradle 2>/dev/null || true
+          sed -i 's/compileSdk 34/compileSdk 36/g' android/app/build.gradle 2>/dev/null || true
+          sed -i 's/compileSdk = 34/compileSdk = 36/g' android/app/build.gradle 2>/dev/null || true
+          sed -i 's/34/36/g' android/app/build.gradle
+          cat android/app/build.gradle | grep -A2 -B2 compileSdk || cat android/app/build.gradle
+
+      - name: Build APK
+        run: |
+          cd ${{ env.PROJECT_DIR }}
+          flutter pub get
+          flutter pub upgrade file_picker
+          flutter build apk --release
+
       - uses: actions/upload-artifact@v4
         with:
           name: Salaama-School-App-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ env.PROJECT_DIR }}/build/app/outputs/flutter-apk/app-release.apk
