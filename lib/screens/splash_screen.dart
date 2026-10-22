@@ -13,7 +13,6 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Go to Login after 3 seconds - THIS FIXES STUCK
     Timer(const Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -37,18 +36,17 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo - WHITE SHAPE like your screenshot
             Container(
               width: 200,
               height: 200,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.ellipse(100, 80)),
+                borderRadius: BorderRadius.circular(30), // FIXED HERE
                 boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20)],
               ),
               padding: const EdgeInsets.all(12),
               child: Image.asset(
-                'assets/images/logo.png', // YOUR FILE
+                'assets/images/logo.png',
                 fit: BoxFit.contain,
               ),
             ),
@@ -59,7 +57,6 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                letterSpacing: 0.5,
               ),
             ),
             const SizedBox(height: 40),
