@@ -1,51 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'admin/admin_dashboard.dart';
-import 'staff/tahfiizu_entry_screen.dart';
-import 'parent/parent_dashboard.dart';
 
-class LoginScreen extends StatefulWidget {
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
-}
-
-class _LoginScreenState extends State<LoginScreen> {
-  final emailCtrl = TextEditingController(); // EMPTY NOW - No default email
-  final passCtrl = TextEditingController();
-  String selectedRole = "admin";
-
-  Future<void> login() async {
-    try {
-      final cred = await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailCtrl.text.trim(), password: passCtrl.text.trim());
-      final doc = await FirebaseFirestore.instance.collection("users").doc(cred.user!.email).get();
-      final role = doc.data()?["role"] ?? selectedRole;
-
-      if (role == "admin") Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AdminDashboard()));
-      else if (role == "staff") Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => TahfiizuEntryScreen()));
-      else Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => ParentDashboard()));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Login failed: $e")));
-    }
-  }
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF0D6EFD), Color(0xFFFFF8E1)])),
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(Icons.school, size: 80, color: Color(0xFF0B3D91)),
-            Text("SALAAMA LOGIN", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            SizedBox(height: 20),
-            DropdownButton<String>(value: selectedRole, items: ["admin", "staff", "parent"].map((r) => DropdownMenuItem(value: r, child: Text(r.toUpperCase()))).toList(), onChanged: (v) => setState(() => selectedRole = v!)),
-            TextField(controller: emailCtrl, decoration: InputDecoration(labelText: "Email", hintText: "Enter your email")),
-            TextField(controller: passCtrl, obscureText: true, decoration: InputDecoration(labelText: "Password")),
-            SizedBox(height: 20),
-            ElevatedButton(onPressed: login, child: Text("LOGIN AS ${selectedRole.toUpperCase()}")),
-          ]),
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF90BFEF), Color(0xFFE3F2FD), Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                const SizedBox(height: 40),
+                Container(
+                  width: 170, height: 170,
+                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 20)]),
+                  padding: const EdgeInsets.all(8),
+                  child: ClipOval(child: Image.asset('assets/images/logo.png', fit: BoxFit.contain)),
+                ),
+                const SizedBox(height: 20),
+                const Text("SALAAMA MUSLIM\nJUNIOR SCHOOL", textAlign: TextAlign.center, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF0D2A54))),
+                const SizedBox(height: 6),
+                const Text("DESTINED TO SUCCEED", style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF4CAF50), letterSpacing: 1.5)),
+                const SizedBox(height: 26),
+                const Text("Welcome Back", style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold, color: Color(0xFF0D2A54))),
+                const Text("Sign in to your account", style: TextStyle(fontSize: 13, color: Colors.black54)),
+                const SizedBox(height: 26),
+
+                // ADMIN
+                SizedBox(width: double.infinity, height: 54,
+                  child: ElevatedButton.icon(icon: const Icon(Icons.shield, color: Colors.white), label: const Text("Admin Login", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                    style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF1565C0), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                    onPressed: () => Navigator.pushNamed(context, '/admin_login'))),
+                const SizedBox(height: 14),
+                // TEACHER
+                SizedBox(width: double.infinity, height: 54,
+                  child: OutlinedButton.icon(icon: const Icon(Icons.co_present, color: Color(0xFF2E7D32)), label: const Text("Teacher Login", style: TextStyle(color: Color(0xFF2E7D32), fontWeight: FontWeight.bold, fontSize: 16)),
+                    style: OutlinedButton.styleFrom(backgroundColor: Colors.white, side: BorderSide(color: Color(0xFF81C784), width: 1.6), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                    onPressed: () => Navigator.pushNamed(context, '/teacher_login'))),
+                const SizedBox(height: 14),
+                // PARENT - 3rd BUTTON
+                SizedBox(width: double.infinity, height: 54,
+                  child: OutlinedButton.icon(icon: const Icon(Icons.family_restroom, color: Color(0xFF1565C0)), label: const Text("Parent Login", style: TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.bold, fontSize: 16)),
+                    style: OutlinedButton.styleFrom(backgroundColor: Colors.white, side: BorderSide(color: Color(0xFF64B5F6), width: 1.6), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                    onPressed: () => Navigator.pushNamed(context, '/parent_login'))),
+                const SizedBox(height: 20),
+                const Text("Need help? Contact school admin", style: TextStyle(fontSize: 11, color: Colors.grey)),
+              ],
+            ),
+          ),
         ),
       ),
     );
