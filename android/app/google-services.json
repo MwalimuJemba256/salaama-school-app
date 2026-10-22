@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "607122083711",
+    "project_id": "salaama-school-app",
+    "storage_bucket": "salaama-school-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:607122083711:android:2de6703ce118630ba2144a",
+        "android_client_info": {
+          "package_name": "com.salaama.school.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBz0PDDPYMP5s7V_wtFWrw1Q13WOkqs-6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
