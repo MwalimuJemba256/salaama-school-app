@@ -11,7 +11,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final emailCtrl = TextEditingController(text: "nassakalatiifah@gmail.com");
+  final emailCtrl = TextEditingController(); // EMPTY NOW - No default email
   final passCtrl = TextEditingController();
   String selectedRole = "admin";
 
@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Text("SALAAMA LOGIN", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             SizedBox(height: 20),
             DropdownButton<String>(value: selectedRole, items: ["admin", "staff", "parent"].map((r) => DropdownMenuItem(value: r, child: Text(r.toUpperCase()))).toList(), onChanged: (v) => setState(() => selectedRole = v!)),
-            TextField(controller: emailCtrl, decoration: InputDecoration(labelText: "Email")),
+            TextField(controller: emailCtrl, decoration: InputDecoration(labelText: "Email", hintText: "Enter your email")),
             TextField(controller: passCtrl, obscureText: true, decoration: InputDecoration(labelText: "Password")),
             SizedBox(height: 20),
             ElevatedButton(onPressed: login, child: Text("LOGIN AS ${selectedRole.toUpperCase()}")),
