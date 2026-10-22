@@ -3,7 +3,7 @@ pluginManagement {
         def properties = new Properties()
         file("local.properties").withInputStream { properties.load(it) }
         def flutterSdkPath = properties.getProperty("flutter.sdk")
-        assert flutterSdkPath != null, "flutter.sdk not set in local.properties or not set from command line. Please run `flutter config --no-analytics --no-enable-web --no-enable-linux-desktop --no-enable-macos-desktop --no-enable-windows-desktop --no-enable-android --no-enable-ios --no-enable-cli --no-enable-fuchsia`"
+        assert flutterSdkPath != null, "flutter.sdk not set in local.properties or from command line."
         return flutterSdkPath
     }()
 
