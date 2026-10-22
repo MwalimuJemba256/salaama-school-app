@@ -1,54 +1,16 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
-
-class SplashScreen extends StatefulWidget {
-  @override
-  _SplashScreenState createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(Duration(seconds: 3), () {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => LoginScreen()));
-    });
-  }
-
+class SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF0D6EFD), Color(0xFFFFF8E1), Color(0xFF7AC74F)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        decoration: BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF1565C0), Color(0xFF90CAF9)], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيمِ",
-                style: TextStyle(fontSize: 22, color: Color(0xFF2E7D32), fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 30),
-              Icon(Icons.menu_book, size: 100, color: Color(0xFF0B3D91)),
-              SizedBox(height: 10),
-              Text(
-                "SALAAMA MUSLIM\nJUNIOR SCHOOL",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0B3D91)),
-              ),
-              Text("DESTINED TO SUCCEED", style: TextStyle(letterSpacing: 3, color: Color(0xFF0B3D91))),
-              SizedBox(height: 50),
-              CircularProgressIndicator(color: Color(0xFF0B3D91)),
-              SizedBox(height: 20),
-              Text("nassakalatiifah@gmail.com | 0702642786", style: TextStyle(fontSize: 12)),
-            ],
-          ),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Container(width: 180, height: 180, decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle), padding: EdgeInsets.all(10), child: Image.asset('assets/images/logo.png')),
+            SizedBox(height: 20),
+            Text("SALAAMA MUSLIM JUNIOR SCHOOL", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          ]),
         ),
       ),
     );
