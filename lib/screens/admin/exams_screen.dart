@@ -144,11 +144,31 @@ class _ExamsScreenState extends State<ExamsScreen> {
               const SizedBox(height: 12),
               const Text("Secular (0-100 each)", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
               const SizedBox(height: 6),
-              ...secularSubjects.map((sub) => Padding(padding: const EdgeInsets.only(bottom: 8), child: TextField(controller: controllers[sub], decoration: InputDecoration(labelText: sub, border: const OutlineInputBorder(), isDense: true), keyboardType: TextInputType.number))),
+              ...secularSubjects.map((sub) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: TextField(
+                  controller: controllers[sub],
+                  decoration: InputDecoration(labelText: sub, border: const OutlineInputBorder(), isDense: true),
+                  keyboardType: TextInputType.number,
+                ),
+              )),
               const SizedBox(height: 12),
               const Text("Theology (0-100 each)", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF00695C))),
               const SizedBox(height: 6),
-              ...theologySubjects.map((sub) => Padding(padding: const EdgeInsets.only(bottom: 8), child: TextField(controller: controllers[sub], decoration: InputDecoration(labelText: sub, border: const OutlineInputBorder(), isDense: true), filled: true, fillColor: const Color(0xFFE0F2F1)), keyboardType: TextInputType.number))),
+              ...theologySubjects.map((sub) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: TextField(
+                  controller: controllers[sub],
+                  decoration: const InputDecoration(
+                    labelText: "",
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                    filled: true,
+                    fillColor: Color(0xFFE0F2F1),
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              )).toList(),
             ],
           ),
         ),
