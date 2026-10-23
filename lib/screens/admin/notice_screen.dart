@@ -16,11 +16,10 @@ class _NoticeScreenState extends State<NoticeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Notice Board - Salaama"),
-        backgroundColor: const Color(0xFF283593),
-        foregroundColor: Colors.white,
-      ),
+      appBar: const SalaamaAppBar(
+        title: "Notice",
+        backgroundColor: Color(0xFF283593),
+),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: const Color(0xFF283593),
         icon: const Icon(Icons.campaign, color: Colors.white),
