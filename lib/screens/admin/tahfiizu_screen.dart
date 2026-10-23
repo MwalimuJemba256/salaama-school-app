@@ -14,11 +14,10 @@ class _TahfiizuScreenState extends State<TahfiizuScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Tahfiizu - Quran Memorization"),
-        backgroundColor: const Color(0xFF00695C),
-        foregroundColor: Colors.white,
-      ),
+      appBar: const SalaamaAppBar(
+        title: "Tahfiizu",
+        backgroundColor: Color(0xFF00695C),
+),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF00695C),
         child: const Icon(Icons.add, color: Colors.white),
