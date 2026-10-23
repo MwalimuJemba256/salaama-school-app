@@ -16,6 +16,31 @@
       "api_key": [
         {
           "current_key": "AIzaSyBz0PDDPYMP5s7V_wtFWrw1Q13WOkqs-6I"
+        },
+        {
+          "current_key": "AIzaSyDYDqD42YOBMhP-dnct3p2akx3lSlJrgs8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:607122083711:android:f5e79d3b07407273a2144a",
+        "android_client_info": {
+          "package_name": "com.salaama.schoolapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBz0PDDPYMP5s7V_wtFWrw1Q13WOkqs-6I"
+        },
+        {
+          "current_key": "AIzaSyDYDqD42YOBMhP-dnct3p2akx3lSlJrgs8"
         }
       ],
       "services": {
