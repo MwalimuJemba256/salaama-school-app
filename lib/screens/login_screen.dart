@@ -9,7 +9,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController(text: "nassakalatiifah@gmail.com");
+  final _emailController = TextEditingController(); // EMPTY NOW - no email remains!
   final _passwordController = TextEditingController();
   String _selectedRole = "Admin";
   bool _loading = false;
@@ -22,12 +22,9 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
       if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => DashboardScreen(role: _selectedRole)));
     } on FirebaseAuthException catch (e) {
-      String msg = e.message ?? "Login failed";
-      if (e.code == 'user-not-found') msg = "User not found. Create in Firebase Console!";
-      if (e.code == 'wrong-password' || e.code == 'invalid-credential') msg = "Wrong password!";
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message ?? "Login failed"), backgroundColor: Colors.red));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -49,14 +46,14 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 30),
               DropdownButtonFormField<String>(
                 value: _selectedRole,
-                decoration: InputDecoration(labelText: "Select Role", prefixIcon: Icon(Icons.person), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+                decoration: InputDecoration(labelText: "Select Role", prefixIcon: const Icon(Icons.person), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
                 items: ["Admin", "Teacher", "Parent"].map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
                 onChanged: (v) => setState(() => _selectedRole = v!),
               ),
               const SizedBox(height: 16),
-              TextField(controller: _emailController, decoration: InputDecoration(labelText: "Email", prefixIcon: Icon(Icons.email), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+              TextField(controller: _emailController, decoration: InputDecoration(labelText: "Email", prefixIcon: const Icon(Icons.email), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
               const SizedBox(height: 16),
-              TextField(controller: _passwordController, obscureText: true, decoration: InputDecoration(labelText: "Password", prefixIcon: Icon(Icons.lock), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
+              TextField(controller: _passwordController, obscureText: true, decoration: InputDecoration(labelText: "Password", prefixIcon: const Icon(Icons.lock), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)))),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity, height: 52,
