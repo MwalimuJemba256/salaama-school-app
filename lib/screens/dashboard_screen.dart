@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../widgets/salaama_app_bar.dart';
 import 'login_screen.dart';
 import 'admin/students_screen.dart';
 import 'admin/teachers_screen.dart';
@@ -10,6 +11,7 @@ import 'admin/attendance_screen.dart';
 import 'admin/exams_screen.dart';
 import 'admin/media_screen.dart';
 import 'admin/notice_screen.dart';
+import 'admin/documents_screen.dart';
 import 'parent/parent_home.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -23,17 +25,21 @@ class DashboardScreen extends StatelessWidget {
     if (role == "Parent") appColor = const Color(0xFF6A1B9A);
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-      appBar: AppBar(title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Salaama $role", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)), const Text("DESTINED TO SUCCEED", style: TextStyle(fontSize: 10))]), backgroundColor: appColor, foregroundColor: Colors.white, actions: [IconButton(icon: const Icon(Icons.logout), onPressed: () async { await FirebaseAuth.instance.signOut(); if (!context.mounted) return; Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())); })]),
-      body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Assalamu Alaikum!", style: TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text("SALAAMA MUSLIM JUNIOR SCHOOL", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])), const SizedBox(height: 20), Text("$role Dashboard", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)), const SizedBox(height: 12), GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.15, children: _getCardsForRole(context)), const SizedBox(height: 20), const Center(child: Text("© 2026 Salaama - DESTINED TO SUCCEED\nAll Modules Complete - Alhamdulillah!", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 11)))])),
+      appBar: SalaamaDashboardAppBar(
+        role: role,
+        backgroundColor: appColor,
+        actions: [IconButton(icon: const Icon(Icons.logout), onPressed: () async { await FirebaseAuth.instance.signOut(); if (!context.mounted) return; Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())); })],
+      ),
+      body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Assalamu Alaikum!", style: TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text("SALAAMA MUSLIM JUNIOR SCHOOL - All Modules Ready!", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))])), const SizedBox(height: 20), Text("$role Dashboard", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)), const SizedBox(height: 12), GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.15, children: _getCardsForRole(context)), const SizedBox(height: 20), const Center(child: Text("© 2026 Salaama - DESTINED TO SUCCEED", style: TextStyle(color: Colors.grey, fontSize: 11)))])),
     );
   }
 
   List<Widget> _getCardsForRole(BuildContext context) {
     if (role == "Parent") {
       return [
-        _buildCard(context, Icons.child_care, "My Children", "View Children", const Color(0xFF6A1B9A), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
-        _buildCard(context, Icons.campaign, "Notices", "School News", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()))),
-        _buildCard(context, Icons.photo_library, "Media", "Photos & Videos", const Color(0xFF37474F), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MediaScreen()))),
+        _buildCard(context, Icons.child_care, "My Children", "View", const Color(0xFF6A1B9A), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
+        _buildCard(context, Icons.campaign, "Notices", "News", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()))),
+        _buildCard(context, Icons.photo_library, "Media", "Photos/Videos", const Color(0xFF37474F), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MediaScreen()))),
         _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
         _buildCard(context, Icons.quiz, "Exams", "Results", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
         _buildCard(context, Icons.payments, "Fees", "Balance", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
@@ -49,6 +55,7 @@ class DashboardScreen extends StatelessWidget {
       _buildCard(context, Icons.quiz, "Exams", "Results", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamsScreen()))),
       _buildCard(context, Icons.photo_library, "Media", "Videos/Audio", const Color(0xFF37474F), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MediaScreen()))),
       _buildCard(context, Icons.campaign, "Notices", "Board", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()))),
+      _buildCard(context, Icons.picture_as_pdf, "Documents", "PNG Reports", const Color(0xFF1565C0), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DocumentsScreen()))),
     ];
   }
 
