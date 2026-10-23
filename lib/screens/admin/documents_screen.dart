@@ -32,7 +32,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Generate Documents - PNG"), backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white),
+     appBar: const SalaamaAppBar(title: "Documents", backgroundColor: Color(0xFF1565C0)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
