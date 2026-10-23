@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'parent_dashboard_screen.dart';
 
 class ParentLoginScreen extends StatefulWidget {
   const ParentLoginScreen({super.key});
@@ -22,7 +21,7 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
         password: _passwordController.text.trim(),
       );
       if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ParentDashboardScreen()));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Parent Login Success!")));
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message ?? "Login failed")));
     } finally {
@@ -43,10 +42,8 @@ class _ParentLoginScreenState extends State<ParentLoginScreen> {
             Container(width: 100, height: 100, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(50)), padding: const EdgeInsets.all(8), child: Image.asset('assets/images/logo.png')),
             const SizedBox(height: 10),
             const Text("Welcome Parent", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            const Text("Enter your child's admission number", style: TextStyle(color: Colors.grey)),
             const SizedBox(height: 24),
-            TextField(controller: _emailController, decoration: const InputDecoration(labelText: "Parent Email / Student ID", prefixIcon: Icon(Icons.person), border: OutlineInputBorder(), filled: true, fillColor: Colors.white)),
+            TextField(controller: _emailController, decoration: const InputDecoration(labelText: "Parent Email", prefixIcon: Icon(Icons.person), border: OutlineInputBorder(), filled: true, fillColor: Colors.white)),
             const SizedBox(height: 16),
             TextField(controller: _passwordController, obscureText: _obscure, decoration: InputDecoration(labelText: "Password", prefixIcon: const Icon(Icons.lock), border: const OutlineInputBorder(), filled: true, fillColor: Colors.white, suffixIcon: IconButton(icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility), onPressed: () => setState(() => _obscure = !_obscure)))),
             const SizedBox(height: 24),
