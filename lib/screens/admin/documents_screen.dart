@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../widgets/salaama_app_bar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:share_plus/share_plus.dart';
