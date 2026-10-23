@@ -23,10 +23,21 @@ class _MediaScreenState extends State<MediaScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Salaama Media Gallery"),
-        backgroundColor: const Color(0xFF37474F),
-        foregroundColor: Colors.white,
+     appBar: SalaamaAppBar(
+        title: "Media",
+        backgroundColor: Color(0xFF37474F),
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.white,
+          tabs: const [
+            Tab(icon: Icon(Icons.photo), text: "Pictures"),
+            Tab(icon: Icon(Icons.videocam), text: "Videos"),
+            Tab(icon: Icon(Icons.audiotrack), text: "Audios"),
+          ],
+        ),
+),
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
