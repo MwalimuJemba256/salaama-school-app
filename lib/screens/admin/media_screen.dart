@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../widgets/salaama_app_bar.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 
 class MediaScreen extends StatefulWidget {
   const MediaScreen({super.key});
@@ -23,7 +21,7 @@ class _MediaScreenState extends State<MediaScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     appBar: SalaamaAppBar(
+    appBar: SalaamaAppBar(
         title: "Media",
         backgroundColor: Color(0xFF37474F),
         bottom: TabBar(
