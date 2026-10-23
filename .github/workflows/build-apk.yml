@@ -12,6 +12,20 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.0'
+      - name: Fix missing app icon
+        run: |
+          mkdir -p android/app/src/main/res/mipmap-hdpi
+          mkdir -p android/app/src/main/res/mipmap-mdpi
+          mkdir -p android/app/src/main/res/mipmap-xhdpi
+          mkdir -p android/app/src/main/res/mipmap-xxhdpi
+          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
+          # Create simple placeholder icon if missing
+          for d in android/app/src/main/res/mipmap-*; do
+            if [ ! -f "$d/ic_launcher.png" ]; then
+              cp android/app/src/main/res/mipmap-hdpi/ic_launcher.png "$d/ic_launcher.png" 2>/dev/null || echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=" | base64 -d > "$d/ic_launcher.png"
+            fi
+          done
+          ls android/app/src/main/res/mipmap-hdpi/
       - run: flutter pub get
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
