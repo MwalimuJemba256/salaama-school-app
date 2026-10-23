@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'login_screen.dart';
 import 'admin/students_screen.dart';
+import 'admin/teachers_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String role;
@@ -147,6 +148,8 @@ class DashboardScreen extends StatelessWidget {
       onTap: () {
         if (title == "Students") {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()));
+        } else if (title == "Teachers") {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const TeachersScreen()));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$title - Coming Soon!"), backgroundColor: color));
         }
