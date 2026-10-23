@@ -12,9 +12,22 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.0'
-      - name: Fix icon issue
+      - name: Fix Salaama Icon from assets/images
         run: |
-          sed -i 's/@mipmap\/ic_launcher/@android:mipmap\/sym_def_app_icon/g' android/app/src/main/AndroidManifest.xml
+          ICON=$(find assets -type f -name "*.png" | head -n 1)
+          echo "Using icon: $ICON"
+          if [ -f "$ICON" ]; then
+            sudo apt-get update -qq && sudo apt-get install -y -qq imagemagick > /dev/null
+            for size in 48 72 96 144 192; do
+              case $size in
+                48) dir="mipmap-mdpi";; 72) dir="mipmap-hdpi";; 96) dir="mipmap-xhdpi";; 144) dir="mipmap-xxhdpi";; 192) dir="mipmap-xxxhdpi";;
+              esac
+              mkdir -p android/app/src/main/res/$dir
+              convert "$ICON" -resize ${size}x${size} android/app/src/main/res/$dir/ic_launcher.png
+              echo "Created $dir/ic_launcher.png"
+            done
+          fi
+          cat android/app/src/main/AndroidManifest.xml | grep icon
       - run: flutter pub get
       - run: flutter build apk --release
       - uses: actions/upload-artifact@v4
