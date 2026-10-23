@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'login_screen.dart';
 import 'admin/students_screen.dart';
 import 'admin/teachers_screen.dart';
+import 'admin/classes_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String role;
@@ -115,7 +116,7 @@ class DashboardScreen extends StatelessWidget {
       return [
         _buildCard(context, Icons.people, "Students", "450 Students", Colors.blue, "Manage students"),
         _buildCard(context, Icons.school, "Teachers", "25 Teachers", Colors.green, "Staff management"),
-        _buildCard(context, Icons.class_, "Classes", "P1 - P7", Colors.orange, "Class & sections"),
+        _buildCard(context, Icons.class_, "Classes", "Baby to P7", Colors.orange, "Nursery & Primary"),
         _buildCard(context, Icons.payments, "Fees", "UGX Collected", Colors.purple, "Fees & payments"),
         _buildCard(context, Icons.fact_check, "Attendance", "Today: 95%", Colors.teal, "Daily attendance"),
         _buildCard(context, Icons.quiz, "Exams", "Term 2 Results", Colors.red, "Marks & reports"),
@@ -150,6 +151,8 @@ class DashboardScreen extends StatelessWidget {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()));
         } else if (title == "Teachers") {
           Navigator.push(context, MaterialPageRoute(builder: (_) => const TeachersScreen()));
+        } else if (title == "Classes") {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassesScreen()));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$title - Coming Soon!"), backgroundColor: color));
         }
