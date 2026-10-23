@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../widgets/salaama_app_bar.dart';
 
 class TeachersScreen extends StatelessWidget {
   const TeachersScreen({super.key});
