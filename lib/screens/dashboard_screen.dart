@@ -7,6 +7,7 @@ import 'admin/classes_screen.dart';
 import 'admin/tahfiizu_screen.dart';
 import 'admin/fees_screen.dart';
 import 'admin/attendance_screen.dart';
+import 'admin/exams_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String role;
@@ -32,11 +33,9 @@ class DashboardScreen extends StatelessWidget {
           children: [
             Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Assalamu Alaikum!", style: TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text("SALAAMA MUSLIM JUNIOR SCHOOL", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
             const SizedBox(height: 20),
-            Text("$role Management", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
             GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.25, children: _getCardsForRole(context)),
             const SizedBox(height: 20),
-            const Center(child: Text("© 2026 Salaama Muslim Junior School", style: TextStyle(color: Colors.grey, fontSize: 11))),
+            const Center(child: Text("© 2026 Salaama - DESTINED TO SUCCEED", style: TextStyle(color: Colors.grey, fontSize: 11))),
           ],
         ),
       ),
@@ -50,7 +49,7 @@ class DashboardScreen extends StatelessWidget {
       _buildCard(context, Icons.class_, "Classes", "Baby to P7", Colors.orange),
       _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran", const Color(0xFF00695C)),
       _buildCard(context, Icons.payments, "Fees", "Payments", Colors.purple),
-      _buildCard(context, Icons.fact_check, "Attendance", "95%", Colors.teal),
+      _buildCard(context, Icons.fact_check, "Attendance", "Daily", Colors.teal),
       _buildCard(context, Icons.quiz, "Exams", "Results", Colors.red),
       _buildCard(context, Icons.campaign, "Notice", "News", Colors.indigo),
     ];
@@ -65,6 +64,7 @@ class DashboardScreen extends StatelessWidget {
         else if (title == "Tahfiizu") Navigator.push(context, MaterialPageRoute(builder: (_) => const TahfiizuScreen()));
         else if (title == "Fees") Navigator.push(context, MaterialPageRoute(builder: (_) => const FeesScreen()));
         else if (title == "Attendance") Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
+        else if (title == "Exams") Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamsScreen()));
         else ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$title Coming Soon!"), backgroundColor: color));
       },
       child: Container(
