@@ -8,6 +8,7 @@ import 'admin/tahfiizu_screen.dart';
 import 'admin/fees_screen.dart';
 import 'admin/attendance_screen.dart';
 import 'admin/exams_screen.dart';
+import 'parent/parent_home.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String role;
@@ -30,11 +31,16 @@ class DashboardScreen extends StatelessWidget {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Assalamu Alaikum!", style: TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text("SALAAMA MUSLIM JUNIOR SCHOOL", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
+            Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Assalamu Alaikum!", style: TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), Text(role == "Admin" ? "SALAAMA MUSLIM JUNIOR SCHOOL" : role == "Teacher" ? "Teacher Portal" : "Parent Portal - $userEmail", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
             const SizedBox(height: 20),
+            Text("$role Dashboard", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 12),
             GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.25, children: _getCardsForRole(context)),
             const SizedBox(height: 20),
+            if (role == "Parent") Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: Colors.purple.shade50, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.purple.shade100)), child: const Row(children: [Icon(Icons.info, color: Colors.purple, size: 18), SizedBox(width: 8), Expanded(child: Text("Parents: If you don't see your child, ask Admin to add your email/phone to student record", style: TextStyle(fontSize: 11, color: Colors.purple)))])),
+            const SizedBox(height: 12),
             const Center(child: Text("© 2026 Salaama - DESTINED TO SUCCEED", style: TextStyle(color: Colors.grey, fontSize: 11))),
           ],
         ),
@@ -43,30 +49,31 @@ class DashboardScreen extends StatelessWidget {
   }
 
   List<Widget> _getCardsForRole(BuildContext context) {
+    if (role == "Parent") {
+      return [
+        _buildCard(context, Icons.child_care, "My Children", "View Children", const Color(0xFF6A1B9A), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
+        _buildCard(context, Icons.payments, "Fees Status", "Paid / Balance", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => ParentChildrenScreen()))),
+        _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran Progress", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => ParentChildrenScreen()))),
+        _buildCard(context, Icons.fact_check, "Attendance", "Present %", Colors.teal, () => Navigator.push(context, MaterialPageRoute(builder: (_) => ParentChildrenScreen()))),
+        _buildCard(context, Icons.quiz, "Exams", "Results", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => ParentChildrenScreen()))),
+        _buildCard(context, Icons.campaign, "Notice", "School News", Colors.indigo, () {}),
+      ];
+    }
     return [
-      _buildCard(context, Icons.people, "Students", "450 Students", Colors.blue),
-      _buildCard(context, Icons.school, "Teachers", "25 Teachers", Colors.green),
-      _buildCard(context, Icons.class_, "Classes", "Baby to P7", Colors.orange),
-      _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran", const Color(0xFF00695C)),
-      _buildCard(context, Icons.payments, "Fees", "Payments", Colors.purple),
-      _buildCard(context, Icons.fact_check, "Attendance", "Daily", Colors.teal),
-      _buildCard(context, Icons.quiz, "Exams", "Results", Colors.red),
-      _buildCard(context, Icons.campaign, "Notice", "News", Colors.indigo),
+      _buildCard(context, Icons.people, "Students", "450 Students", Colors.blue, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()))),
+      _buildCard(context, Icons.school, "Teachers", "25 Teachers", Colors.green, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TeachersScreen()))),
+      _buildCard(context, Icons.class_, "Classes", "Baby to P7", Colors.orange, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassesScreen()))),
+      _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TahfiizuScreen()))),
+      _buildCard(context, Icons.payments, "Fees", "Payments", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FeesScreen()))),
+      _buildCard(context, Icons.fact_check, "Attendance", "Daily", Colors.teal, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()))),
+      _buildCard(context, Icons.quiz, "Exams", "Results", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamsScreen()))),
+      _buildCard(context, Icons.campaign, "Notice", "News", Colors.indigo, () {}),
     ];
   }
 
-  Widget _buildCard(BuildContext context, IconData icon, String title, String subtitle, Color color) {
+  Widget _buildCard(BuildContext context, IconData icon, String title, String subtitle, Color color, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () {
-        if (title == "Students") Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()));
-        else if (title == "Teachers") Navigator.push(context, MaterialPageRoute(builder: (_) => const TeachersScreen()));
-        else if (title == "Classes") Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassesScreen()));
-        else if (title == "Tahfiizu") Navigator.push(context, MaterialPageRoute(builder: (_) => const TahfiizuScreen()));
-        else if (title == "Fees") Navigator.push(context, MaterialPageRoute(builder: (_) => const FeesScreen()));
-        else if (title == "Attendance") Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
-        else if (title == "Exams") Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamsScreen()));
-        else ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$title Coming Soon!"), backgroundColor: color));
-      },
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)]),
