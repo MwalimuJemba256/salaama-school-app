@@ -23,7 +23,7 @@ class _ExamsScreenState extends State<ExamsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Exams & Results"), backgroundColor: const Color(0xFFC62828), foregroundColor: Colors.white),
+      appBar: const SalaamaAppBar(title: "Exams", backgroundColor: Color(0xFFC62828)),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFC62828),
         child: const Icon(Icons.add, color: Colors.white),
