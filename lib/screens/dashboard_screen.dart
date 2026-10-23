@@ -6,6 +6,7 @@ import 'admin/teachers_screen.dart';
 import 'admin/classes_screen.dart';
 import 'admin/tahfiizu_screen.dart';
 import 'admin/fees_screen.dart';
+import 'admin/attendance_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   final String role;
@@ -29,7 +30,7 @@ class DashboardScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Assalamu Alaikum!", style: TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), Text("SALAAMA MUSLIM JUNIOR SCHOOL", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
+            Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Assalamu Alaikum!", style: TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text("SALAAMA MUSLIM JUNIOR SCHOOL", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16))])),
             const SizedBox(height: 20),
             Text("$role Management", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
@@ -63,6 +64,7 @@ class DashboardScreen extends StatelessWidget {
         else if (title == "Classes") Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassesScreen()));
         else if (title == "Tahfiizu") Navigator.push(context, MaterialPageRoute(builder: (_) => const TahfiizuScreen()));
         else if (title == "Fees") Navigator.push(context, MaterialPageRoute(builder: (_) => const FeesScreen()));
+        else if (title == "Attendance") Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
         else ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$title Coming Soon!"), backgroundColor: color));
       },
       child: Container(
