@@ -9,7 +9,7 @@ class TeachersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Teachers - Salaama"), backgroundColor: const Color(0xFF2E7D32), foregroundColor: Colors.white),
+      appBar: const SalaamaAppBar(title: "Teachers", backgroundColor: Color(0xFF2E7D32)),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF2E7D32),
         child: const Icon(Icons.add, color: Colors.white),
