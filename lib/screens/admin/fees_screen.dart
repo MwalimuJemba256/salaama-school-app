@@ -20,10 +20,9 @@ class _FeesScreenState extends State<FeesScreen> with SingleTickerProviderStateM
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     appBar: const SalaamaAppBar(
+      appBar: SalaamaAppBar(
         title: "Fees",
         backgroundColor: Color(0xFF9C27B0),
-),
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
