@@ -7,34 +7,61 @@ class AppConstants {
     'Baby Class','Middle Class','Top Class','P.1','P.2','P.3','P.4','P.5','P.6','P.7',
   ];
 
-  // SECULAR
+  // SECULAR - 4 subjects
   static const List<String> secularSubjects = [
     'English','Mathematics','Science','Social Studies',
   ];
 
-  // THEOLOGY - CORRECTED WITH TARBIYAH
-  static const List<String> theologySubjects = [
+  // THEOLOGY - 4 MAIN SUBJECTS - CORRECTED
+  static const List<String> theologyMainSubjects = [
     'Quran',
-    'Arabic',
     'Fiqh',
-    'Tarbiah - Tauhid',
-    'Tarbiah - Siirah', 
-    'Tarbiah - Hadith',
+    'Tarbia',
+    'Lugha',
   ];
 
-  // For Tarbiah grouping
-  static const Map<String, List<String>> tarbiahSubjects = {
-    'Tarbiah': ['Tauhid', 'Siirah', 'Hadith'],
+  // TIMETABLE BREAKDOWN
+  static const Map<String, List<String>> quranBreakdown = {
+    'Quran': ['Hifz', 'Tafsir', 'Tajwid'],
   };
 
-  // ARABIC NAMES
+  static const Map<String, List<String>> tarbiaBreakdown = {
+    'Tarbia': ['Tauhid', 'Siirah', 'Hadith'],
+  };
+
+  // ALL THEOLOGY FOR REPORTS (7 sub-subjects total)
+  static const List<String> theologyReportSubjects = [
+    'Quran - Hifz',
+    'Quran - Tafsir',
+    'Quran - Tajwid',
+    'Fiqh',
+    'Tarbia - Tauhid',
+    'Tarbia - Siirah',
+    'Tarbia - Hadith',
+    'Lugha',
+  ];
+
+  // ARABIC NAMES - PROFESSIONAL
   static const Map<String, String> arabicNames = {
     'Quran': 'القرآن الكريم',
-    'Arabic': 'اللغة العربية',
+    'Quran - Hifz': 'القرآن - الحفظ',
+    'Quran - Tafsir': 'القرآن - التفسير',
+    'Quran - Tajwid': 'القرآن - التجويد',
+    'Hifz': 'الحفظ',
+    'Tafsir': 'التفسير',
+    'Tajwid': 'التجويد',
     'Fiqh': 'الفقه',
+    'Tarbia': 'التربية الإسلامية',
+    'Tarbia - Tauhid': 'التربية - التوحيد',
+    'Tarbia - Siirah': 'التربية - السيرة النبوية',
+    'Tarbia - Hadith': 'التربية - الحديث الشريف',
     'Tauhid': 'التوحيد',
     'Siirah': 'السيرة النبوية',
     'Hadith': 'الحديث الشريف',
-    'Tarbiah': 'التربية الإسلامية',
+    'Lugha': 'اللغة العربية',
   };
+
+  static const List<String> otherStaffRoles = [
+    'Cook','Guard','Cleaner','Driver','Matron','Secretary',
+  ];
 }
