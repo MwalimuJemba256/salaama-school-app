@@ -22,19 +22,27 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final userEmail = FirebaseAuth.instance.currentUser?.email ?? "Admin";
     Color appColor = const Color(0xFF0D47A1);
-    if (role == "Teacher") appColor = const Color(0xFF2E7D32);
-    if (role == "Parent") appColor = const Color(0xFF6A1B9A);
+    String titleRole = role;
+    if (role == "Teacher") {
+      appColor = const Color(0xFF2E7D32);
+      titleRole = "Teacher";
+    }
+    if (role == "Parent") {
+      appColor = const Color(0xFF6A1B9A);
+      titleRole = "Parent";
+    }
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: SalaamaDashboardAppBar(
-        role: role,
+        role: titleRole,
         backgroundColor: appColor,
         actions: [IconButton(icon: const Icon(Icons.logout), onPressed: () async { await FirebaseAuth.instance.signOut(); if (!context.mounted) return; Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())); })],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Assalamu Alaikum!", style: TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text("SALAAMA MUSLIM JUNIOR SCHOOL", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))])),
+          Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("Assalamu Alaikum $role!", style: const TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), Text(role == "Teacher" ? "TEACHER PORTAL - Manage Your Classes" : role == "Parent" ? "PARENT PORTAL - Track Your Child" : "SALAAMA MUSLIM JUNIOR SCHOOL - Admin Panel", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))])),
           const SizedBox(height: 20),
           Text("$role Dashboard", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
@@ -67,19 +75,35 @@ class DashboardScreen extends StatelessWidget {
   }
 
   List<Widget> _getCardsForRole(BuildContext context, int studentCount, int teacherCount) {
+    // PARENT MENU - Limited
     if (role == "Parent") {
       return [
         _buildCard(context, Icons.child_care, "My Children", "View", const Color(0xFF6A1B9A), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
         _buildCard(context, Icons.campaign, "Notices", "News", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()))),
         _buildCard(context, Icons.photo_library, "Media", "Photos/Videos", const Color(0xFF37474F), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MediaScreen()))),
-        _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
-        _buildCard(context, Icons.quiz, "Exams", "Results", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
-        _buildCard(context, Icons.payments, "Fees", "Balance", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
+        _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran Progress", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
+        _buildCard(context, Icons.quiz, "Exams", "My Child Results", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
+        _buildCard(context, Icons.payments, "Fees", "My Balance", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
       ];
     }
+    
+    // TEACHER MENU - Different from Admin!
+    if (role == "Teacher") {
+      return [
+        _buildCard(context, Icons.people, "My Students", "$studentCount Students", Colors.blue, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()))),
+        _buildCard(context, Icons.fact_check, "Attendance", "Mark Daily", Colors.teal, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()))),
+        _buildCard(context, Icons.quiz, "Exams", "Enter Marks", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamsScreen()))),
+        _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TahfiizuScreen()))),
+        _buildCard(context, Icons.class_, "My Classes", "Baby-P7", Colors.orange, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassesScreen()))),
+        _buildCard(context, Icons.campaign, "Notices", "School News", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()))),
+        _buildCard(context, Icons.photo_library, "Media", "Upload Work", const Color(0xFF37474F), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MediaScreen()))),
+      ];
+    }
+
+    // ADMIN MENU (Amin) - Full access
     return [
       _buildCard(context, Icons.people, "Students", "$studentCount Students", Colors.blue, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()))),
-      _buildCard(context, Icons.school, "Teachers", "$teacherCount Teachers - Unlimited", Colors.green, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TeachersScreen()))),
+      _buildCard(context, Icons.school, "Teachers", "$teacherCount Teachers", Colors.green, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TeachersScreen()))),
       _buildCard(context, Icons.class_, "Classes", "Baby-P7", Colors.orange, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassesScreen()))),
       _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TahfiizuScreen()))),
       _buildCard(context, Icons.payments, "Fees", "Payments", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FeesScreen()))),
@@ -87,7 +111,7 @@ class DashboardScreen extends StatelessWidget {
       _buildCard(context, Icons.quiz, "Exams", "Results", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamsScreen()))),
       _buildCard(context, Icons.photo_library, "Media", "Videos/Audio", const Color(0xFF37474F), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MediaScreen()))),
       _buildCard(context, Icons.campaign, "Notices", "Board", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()))),
-      _buildCard(context, Icons.picture_as_pdf, "Documents", "PNG Reports", const Color(0xFF1565C0), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DocumentsScreen()))),
+      _buildCard(context, Icons.picture_as_pdf, "Documents", "Reports", const Color(0xFF1565C0), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DocumentsScreen()))),
     ];
   }
 
