@@ -1,5 +1,5 @@
 name: salaama_school
-description: Salaama Muslim Junior School
+description: Salaama Muslim Junior School - Destined to Succeed
 publish_to: 'none'
 version: 18.0.0+18
 
@@ -16,6 +16,11 @@ dependencies:
   image_picker: ^1.0.7
   firebase_storage: ^11.6.9
   uuid: ^4.4.0
+  pdf: ^3.10.7
+  printing: ^5.11.1
+  path_provider: ^2.1.2
+  share_plus: ^7.2.1
+  screenshot: ^2.1.0
 
 dev_dependencies:
   flutter_test:
