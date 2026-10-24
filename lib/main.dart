@@ -1,3 +1,4 @@
+import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -18,7 +19,9 @@ import 'screens/fees_receipt_screen.dart'; // <-- FEES RECEIPT IMPORT NEW
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await Firebase.initializeApp();
+   await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
     debugPrint("✅ Firebase initialized");
   } catch (e) {
     debugPrint("⚠️ Firebase failed but app will continue: $e");
