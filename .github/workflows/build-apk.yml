@@ -1,56 +1,26 @@
-name: Salaama School APK Build
+name: Build Salaama APK
 
 on:
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build:
+  build-apk:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v4
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.22.0'
-          channel: 'stable'
-          cache: true
-
-      - name: Flutter clean
-        run: flutter clean
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Build APK Release
-        run: flutter build apk --release --no-tree-shake-icons
-
-      # ===== FIXED v4 - WAS v3 DEPRECATED =====
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
+          channel: stable
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
         with:
-          name: salaama-school-apk
+          name: salaama-apk
           path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 30
-
-      - name: Build App Bundle (AAB) for Play Store
-        run: flutter build appbundle --release
-
-      - name: Upload AAB Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: salaama-school-aab
-          path: build/app/outputs/bundle/release/app-release.aab
-          retention-days: 30
