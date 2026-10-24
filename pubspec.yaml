@@ -24,9 +24,9 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.3.10
 
-# APP ICON - SALAAMA LOGO
+# APP ICON - USE ic_launcher (DEFAULT ANDROID)
 flutter_launcher_icons:
-  android: "launcher_icon"
+  android: "ic_launcher"
   ios: true
   image_path: "assets/images/logo.png"
   min_sdk_android: 21
