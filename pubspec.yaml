@@ -9,13 +9,19 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.2
+  
+  # Firebase
   firebase_core: ^2.24.2
   firebase_auth: ^4.15.3
   cloud_firestore: ^4.15.8
-  cupertino_icons: ^1.0.2
-  image_picker: ^1.0.7
   firebase_storage: ^11.6.9
+  
+  # Images & IDs
+  image_picker: ^1.0.7
   uuid: ^4.4.0
+  
+  # Documents - PDF + PNG + Share
   pdf: ^3.10.7
   printing: ^5.11.1
   path_provider: ^2.1.2
