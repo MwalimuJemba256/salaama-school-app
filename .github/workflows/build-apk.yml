@@ -26,17 +26,19 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Force Generate Icons
+      - name: Generate Salaama Icon - FORCE!
         run: |
           dart run flutter_launcher_icons
-          echo "Icons generated:"
-          ls android/app/src/main/res/mipmap-hdpi/
+          ls -la android/app/src/main/res/mipmap-*/ic_launcher.png
 
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Generate Splash
+        run: dart run flutter_native_splash:create
+
+      - name: Build APK with Salaama Icon
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Salaama-School-APK-Final
+          name: Salaama-School-APK
           path: build/app/outputs/flutter-apk/app-release.apk
