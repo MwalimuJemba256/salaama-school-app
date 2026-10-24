@@ -21,8 +21,17 @@ jobs:
           flutter-version: '3.24.5'
           channel: 'stable'
       
+      - name: Fix Android Folder (Recreate if broken)
+        run: |
+          rm -rf android
+          flutter create . --platforms=android --org com.salaama --project-name salaama_school
+          echo "Android folder recreated!"
+      
       - name: Get dependencies
         run: flutter pub get
+      
+      - name: Generate Icon from logo.png
+        run: dart run flutter_launcher_icons || echo "Icon gen failed, using default"
       
       - name: Build APK Release
         run: flutter build apk --release --no-tree-shake-icons
