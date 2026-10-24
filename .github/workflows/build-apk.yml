@@ -21,6 +21,19 @@ jobs:
           flutter-version: '3.22.0'
           channel: stable
           
+      - name: Restore Android folder (fix missing mipmap)
+        run: |
+          # Backup google-services.json if exists
+          cp android/app/google-services.json /tmp/ 2>/dev/null || echo "no google file"
+          # Delete broken android and recreate
+          rm -rf android
+          flutter create . --platforms=android --project-name salaama_school
+          # Restore google-services.json
+          cp /tmp/google-services.json android/app/ 2>/dev/null || echo "no google file to restore"
+          # Fix applicationId to your real one
+          sed -i 's/com.example.salaama_school/com.salaama.schoolapp/g' android/app/build.gradle
+          sed -i 's/com.example.salaama_school/com.salaama.schoolapp/g' android/app/src/main/AndroidManifest.xml
+          
       - name: Get dependencies
         run: flutter pub get
         
