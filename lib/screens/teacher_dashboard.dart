@@ -1,47 +1,60 @@
 import 'package:flutter/material.dart';
-import 'teacher_dashboard_screen.dart';
+import '../constants/app_constants.dart';
 
-// This file is wrapper to match your main.dart route name
 class TeacherDashboard extends StatelessWidget {
   final Map<String, dynamic> teacher;
   const TeacherDashboard({super.key, required this.teacher});
 
   @override
   Widget build(BuildContext context) {
-    // If you have teacher_dashboard_screen.dart with different name, we call it
-    return TeacherDashboardScreen(teacherData: teacher);
-  }
-}
-
-// Fallback if teacher_dashboard_screen.dart doesn't exist - Simple dashboard
-class TeacherDashboardScreen extends StatelessWidget {
-  final Map<String, dynamic> teacherData;
-  const TeacherDashboardScreen({super.key, required this.teacherData});
-
-  @override
-  Widget build(BuildContext context) {
-    final isTheo = teacherData['teacherType'] == 'Theology';
+    final isTheology = teacher['teacherType'] == 'Theology';
+    final color = isTheology ? const Color(0xFF1E3A8A) : const Color(0xFF0D5A2D);
+    
     return Scaffold(
-      appBar: AppBar(backgroundColor: isTheo ? const Color(0xFF1E3A8A) : const Color(0xFF0D5A2D), title: Text('Welcome ${teacherData['fullName'] ?? 'Teacher'}', style: const TextStyle(color: Colors.white)), iconTheme: const IconThemeData(color: Colors.white)),
-      body: Padding(
+      backgroundColor: const Color(0xFFF5F7F5),
+      appBar: AppBar(
+        backgroundColor: color,
+        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('${teacher['fullName']}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          Text('${teacher['teacherType']} Teacher - ${teacher['assignedClasses']?.join(', ')}', style: const TextStyle(color: Colors.white70, fontSize: 11)),
+        ]),
+      ),
+      body: GridView.count(
+        crossAxisCount: 2,
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Card(child: ListTile(leading: Icon(Icons.person, color: isTheo ? const Color(0xFF1E3A8A) : const Color(0xFF0D5A2D)), title: Text(teacherData['fullName'] ?? ''), subtitle: Text('${teacherData['teacherType']} Teacher • ${teacherData['subjects']?.join(', ') ?? ''}'))),
-            const SizedBox(height: 20),
-            Expanded(child: GridView.count(crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12, children: [
-              _dashCard(Icons.people, 'My Students', const Color(0xFF0D5A2D)),
-              _dashCard(Icons.schedule, 'Timetable', Colors.orange),
-              _dashCard(Icons.assignment, 'Marks Entry', const Color(0xFF1E3A8A)),
-              _dashCard(Icons.picture_as_pdf, 'Reports', Colors.purple),
-            ])),
-          ],
-        ),
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        children: [
+          _card(context, 'My Students', Icons.people, color, () => Navigator.pushNamed(context, '/students', arguments: teacher['assignedClasses'])),
+          _card(context, isTheology ? 'Tarbiah Marks' : 'Enter Marks', Icons.edit, color, () {}),
+          _card(context, 'Attendance', Icons.how_to_reg, color, () {}),
+          _card(context, isTheology ? 'Quran Progress' : 'Reports', isTheology ? Icons.mosque : Icons.picture_as_pdf, color, () {}),
+          _card(context, 'Timetable', Icons.schedule, color, () {}),
+          _card(context, 'Messages', Icons.message, color, () {}),
+        ],
       ),
     );
   }
 
-  Widget _dashCard(IconData icon, String title, Color color) {
-    return Card(elevation: 3, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 40, color: color), const SizedBox(height: 8), Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: color))]));
+  Widget _card(BuildContext ctx, String title, IconData icon, Color color, VoidCallback onTap) {
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: Colors.white),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle), child: Icon(icon, size: 32, color: color)),
+              const SizedBox(height: 10),
+              Text(title, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 13)),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
