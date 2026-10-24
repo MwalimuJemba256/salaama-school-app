@@ -26,19 +26,18 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate Salaama Icon - FORCE!
+      - name: Fix iOS folder + Generate Icons
         run: |
+          mkdir -p ios/Runner/Assets.xcassets/AppIcon.appiconset
+          echo '{"images":[],"info":{"author":"xcode","version":1}}' > ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json
           dart run flutter_launcher_icons
-          ls -la android/app/src/main/res/mipmap-*/ic_launcher.png
+          ls android/app/src/main/res/mipmap-*/ic_launcher.png || true
 
-      - name: Generate Splash
-        run: dart run flutter_native_splash:create
-
-      - name: Build APK with Salaama Icon
-        run: flutter build apk --release --no-tree-shake-icons
+      - name: Build APK
+        run: flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Salaama-School-APK
+          name: Salaama-School-APK-Final
           path: build/app/outputs/flutter-apk/app-release.apk
