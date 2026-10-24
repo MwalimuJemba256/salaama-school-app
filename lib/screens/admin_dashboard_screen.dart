@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../widgets/salaama_appbar.dart';
-import 'login_screen.dart';
+import 'screens/login_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -9,102 +8,58 @@ class AdminDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: SalaamaAppBar(
-        title: 'Admin Dashboard - Salaama',
-        actions: [
-          IconButton(icon: const Icon(Icons.logout), onPressed: () async {
-            await FirebaseAuth.instance.signOut();
-            if(context.mounted) Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (r) => false);
-          })
-        ],
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF1E40AF),
+        title: Row(children: [
+          Container(width: 38, height: 38, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white), child: ClipRRect(borderRadius: BorderRadius.circular(19), child: Image.asset('assets/images/logo.png', errorBuilder: (c,e,s) => const Icon(Icons.school, color: Color(0xFF1E40AF))))),
+          const SizedBox(width: 10),
+          const Text('Admin Dashboard', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+        ]),
+        actions: [IconButton(icon: const Icon(Icons.logout, color: Colors.white), onPressed: () async { await FirebaseAuth.instance.signOut(); if(context.mounted) Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (r)=>false); })],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: GridView.count(
           crossAxisCount: 2,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
+          childAspectRatio: 1.1,
           children: [
-            // 1. REGISTER CHILD - With Photo
-            _card(context, Icons.child_care, 'Register Child', 'With Photo', const Color(0xFF0D5A2D), '/register_child', null),
-            
-            // 2. TEACHER LIST - Secular/Theology Filter
-            _card(context, Icons.school, 'Teachers', 'Secular & Theology\nSecular: English, Math, Science, SST\nTheology: Quran Hifz/Tafsir/Tajwid, Fiqh, Tarbia Tauhid/Siirah/Hadith, Lugha', const Color(0xFF1E3A8A), '/teacher_list', null),
-            
-            // 3. OTHER STAFF - Cook, Guard, Cleaner, Driver, Matron, Secretary
-            _card(context, Icons.work, 'OTHER Staff', 'Cook, Guard, Cleaner\nDriver, Matron, Secretary', Colors.brown, '/other_staff', null),
-            
-            // 4. TIMETABLE - Refillable Secular + Theology
-            _card(context, Icons.schedule, 'Timetable', 'Refillable\nSecular + Theology\nQuran=Hifz/Tafsir/Tajwid\nTarbia=Tauhid/Siirah/Hadith', Colors.orange, '/timetable', null),
-            
-            // 5. STUDENTS LIST - To view detail + Generate PDF EN/AR
-            _card(context, Icons.people, 'Students', '1,250 - Tap to view\nID Card PDF EN/عربي\nReport Quran, Fiqh, Tarbia, Lugha', Colors.blue, '/students_list', null),
-            
-            // 6. LEFT STUDENTS - Archive
-            _card(context, Icons.person_off, 'Left Students', 'Graduated, Transferred\nWith Photo + Reason', Colors.red, '/left_students', null),
-            
-            // 7. DOCUMENTS - PDF + PNG EN/AR
-            _card(context, Icons.picture_as_pdf, 'Documents', 'ID Card, Report\nHifz Certificate\nPDF + PNG + Share', Colors.purple, '/documents', null),
-            
-            // 8. FEES - Bursar
-            _card(context, Icons.payments, 'Fees', 'UGX 45M', Colors.green, '/fees', null),
-            
-            // 9. SETTINGS
-            _card(context, Icons.settings, 'Settings', '8 Roles\nAdmin, Head Teacher, DOS\nBursar, Teacher, Tahfiizu, Parent, OTHER', Colors.grey, '/settings', null),
+            _card(context, Icons.people, const Color(0xFF2563EB), 'Students', 'Manage All', '/students_list'),
+            _card(context, Icons.badge, const Color(0xFF15803D), 'Staff', 'Teaching/Non', '/staff_tab'),
+            _card(context, Icons.menu_book, Colors.orange[700]!, 'Classes', 'Streams', '/classes'),
+            _card(context, Icons.how_to_reg, const Color(0xFF0F766E), 'Attendance', 'Daily', '/attendance'),
+            _card(context, Icons.schedule, Colors.purple[700]!, 'Timetable', 'Lessons', '/timetable'),
+            _card(context, Icons.star, Colors.red[700]!, 'Exams', 'Results', '/exams'),
+            _card(context, Icons.auto_stories, const Color(0xFF065F46), 'Tahfiizu', 'Qur\'an', '/tahfiizu'),
+            _card(context, Icons.payments, const Color(0xFF15803D), 'Fees', 'Payments', '/fees'),
+            _card(context, Icons.account_balance_wallet, Colors.purple[700]!, 'Cashflow', 'Income', '/cashflow'),
+            _card(context, Icons.chat, const Color(0xFF1E40AF), 'Chat', 'Staff+Parent', '/chat'),
+            _card(context, Icons.campaign, const Color(0xFF0284C7), 'Notices', 'News', '/notices'),
+            _card(context, Icons.settings, Colors.grey[700]!, 'Settings', 'School Info', '/settings'),
           ],
         ),
       ),
     );
   }
 
-  Widget _card(BuildContext context, IconData icon, String title, String subtitle, Color color, String route, Map<String, dynamic>? args) {
+  Widget _card(BuildContext context, IconData icon, Color color, String title, String subtitle, String route) {
     return Card(
-      elevation: 4,
+      elevation: 1.5,
+      shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Colors.white,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          if (route == '/students_list' || route == '/left_students' || route == '/documents' || route == '/fees' || route == '/settings') {
-            // Coming soon - Show snackbar for now
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(backgroundColor: color, content: Text('$title - Coming Soon! Use $route')),
-            );
-          } else {
-            // Real navigation - Uses routes from main.dart
-            if (args != null) {
-              Navigator.pushNamed(context, route, arguments: args);
-            } else {
-              Navigator.pushNamed(context, route);
-            }
-          }
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: color.withOpacity(0.15), shape: BoxShape.circle),
-                  child: Icon(icon, size: 28, color: color),
-                ),
-                const SizedBox(height: 8),
-                Text(title, textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color)),
-                const SizedBox(height: 4),
-                Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 8, color: Colors.black54), maxLines: 4, overflow: TextOverflow.ellipsis),
-              ],
-            ),
-          ),
-        ),
+        onTap: () => Navigator.pushNamed(context, route),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Icon(icon, size: 32, color: color),
+          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87)),
+          const SizedBox(height: 2),
+          Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.black45)),
+        ]),
       ),
     );
   }
