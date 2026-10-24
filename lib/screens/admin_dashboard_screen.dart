@@ -36,7 +36,9 @@ class AdminDashboardScreen extends StatelessWidget {
             _card(context, Icons.payments, const Color(0xFF15803D), 'Fees', 'Payments', '/fees'),
             _card(context, Icons.account_balance_wallet, Colors.purple[700]!, 'Cashflow', 'Income', '/cashflow'),
             _card(context, Icons.chat, const Color(0xFF1E40AF), 'Chat', 'Staff+Parent', '/chat'),
-            _card(context, Icons.campaign, const Color(0xFF0284C7), 'Notices', 'News', '/notices'),
+            // ===== NEW MEDIA CARD - REPLACES NOTICES + ADDS VIDEO/AUDIO =====
+            _card(context, Icons.video_library, const Color(0xFF065F46), 'Media Center', 'Video+Audio', '/school_media'),
+            _card(context, Icons.campaign, const Color(0xFF0284C7), 'Notices', 'News', '/school_media'), // Notices now also goes to Media Center
             _card(context, Icons.settings, Colors.grey[700]!, 'Settings', 'School Info', '/settings'),
           ],
         ),
