@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 
 class SchoolMediaScreen extends StatefulWidget {
   const SchoolMediaScreen({super.key});
@@ -8,11 +12,42 @@ class SchoolMediaScreen extends StatefulWidget {
 
 class _SchoolMediaScreenState extends State<SchoolMediaScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _uploading = false;
+  double _progress = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+  }
+
+  Future<void> _uploadMedia(bool isVideo) async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(type: isVideo ? FileType.video : FileType.custom, allowedExtensions: isVideo ? null : ['mp3','m4a','wav']);
+      if (result == null) return;
+      File file = File(result.files.single.path!);
+      String fileName = '${DateTime.now().millisecondsSinceEpoch}_${result.files.single.name}';
+      String path = isVideo ? 'school_videos/$fileName' : 'school_audios/$fileName';
+
+      setState(() { _uploading = true; _progress = 0; });
+      UploadTask task = FirebaseStorage.instance.ref(path).putFile(file);
+      task.snapshotEvents.listen((snap) { setState(() { _progress = snap.bytesTransferred / snap.totalBytes; }); });
+      TaskSnapshot snap = await task;
+      String url = await snap.ref.getDownloadURL();
+
+      await FirebaseFirestore.instance.collection(isVideo ? 'videos' : 'audios').add({
+        'title': result.files.single.name,
+        'url': url,
+        'type': isVideo ? 'video' : 'audio',
+        'person': 'Admin Upload',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      setState(() { _uploading = false; });
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${isVideo ? "Video" : "Audio"} uploaded! ${url.substring(0,30)}...')));
+    } catch (e) {
+      setState(() { _uploading = false; });
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+    }
   }
 
   @override
@@ -23,150 +58,58 @@ class _SchoolMediaScreenState extends State<SchoolMediaScreen> with SingleTicker
         backgroundColor: const Color(0xFF065F46),
         title: const Text('Salaama Media Center', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: Colors.white),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(icon: Icon(Icons.video_library), text: 'Video Panel'),
-            Tab(icon: Icon(Icons.audiotrack), text: 'Audio Hifz'),
-            Tab(icon: Icon(Icons.people), text: 'All People'),
-          ],
-        ),
+        bottom: TabBar(controller: _tabController, labelColor: Colors.white, unselectedLabelColor: Colors.white70, indicatorColor: Colors.white, tabs: const [Tab(icon: Icon(Icons.video_library), text: 'Video'), Tab(icon: Icon(Icons.audiotrack), text: 'Audio'), Tab(icon: Icon(Icons.people), text: 'People')]),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // TAB 1: VIDEO PANEL
-          _videoTab(),
-          // TAB 2: AUDIO
-          _audioTab(),
-          // TAB 3: ALL PEOPLE MEDIA
-          _peopleTab(),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF065F46),
-        onPressed: () => _showUploadDialog(),
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('Upload', style: TextStyle(color: Colors.white)),
-      ),
+      body: Column(children: [
+        if (_uploading) LinearProgressIndicator(value: _progress, backgroundColor: Colors.grey[200], color: const Color(0xFF065F46)),
+        if (_uploading) Padding(padding: const EdgeInsets.all(8), child: Text('Uploading ${( _progress*100).toStringAsFixed(0)}% - Firebase Storage', style: const TextStyle(fontSize: 11))),
+        Expanded(child: TabBarView(controller: _tabController, children: [_videoTabFirebase(), _audioTabFirebase(), _peopleTab()])),
+      ]),
+      floatingActionButton: Column(mainAxisSize: MainAxisSize.min, children: [
+        FloatingActionButton.small(heroTag: 'v', backgroundColor: Colors.red, onPressed: () => _uploadMedia(true), child: const Icon(Icons.video_call, color: Colors.white)),
+        const SizedBox(height: 8),
+        FloatingActionButton.extended(heroTag: 'a', backgroundColor: const Color(0xFF065F46), onPressed: () => _uploadMedia(false), icon: const Icon(Icons.audiotrack, color: Colors.white), label: const Text('Upload Media', style: TextStyle(color: Colors.white))),
+      ]),
     );
   }
 
-  Widget _videoTab() {
-    final videos = [
-      {'title': 'Quran Hifz - Juz Amma - Top Class', 'person': 'Student: Ahmed - P5', 'duration': '05:23', 'type': 'Theology'},
-      {'title': 'Tarbiah - Siirah Lesson', 'person': 'Ustadha: Sheikh Musa', 'duration': '12:45', 'type': 'Theology'},
-      {'title': 'Science Experiment - P6', 'person': 'Teacher: Ms. Sarah', 'duration': '08:10', 'type': 'Secular'},
-      {'title': 'School Assembly - Adhan', 'person': 'All Students', 'duration': '03:30', 'type': 'School'},
-      {'title': 'Graduation Ceremony 2024', 'person': 'Baby to P7', 'duration': '25:00', 'type': 'Event'},
-    ];
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: videos.length,
-      itemBuilder: (c,i) {
-        final v = videos[i];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Column(children: [
-            Container(
-              height: 180,
-              decoration: BoxDecoration(color: Colors.black87, borderRadius: const BorderRadius.vertical(top: Radius.circular(12))),
-              child: Stack(children: [
-                const Center(child: Icon(Icons.play_circle_fill, size: 60, color: Colors.white70)),
-                Positioned(bottom: 8, right: 8, child: Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.black54, borderRadius: BorderRadius.circular(4)), child: Text(v['duration']!, style: const TextStyle(color: Colors.white, fontSize: 11)))),
-                Positioned(top: 8, left: 8, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: const Color(0xFF065F46), borderRadius: BorderRadius.circular(12)), child: Text(v['type']!, style: const TextStyle(color: Colors.white, fontSize: 10)))),
-              ]),
-            ),
-            ListTile(
-              leading: const CircleAvatar(backgroundColor: Color(0xFF065F46), child: Icon(Icons.person, color: Colors.white, size: 18)),
-              title: Text(v['title']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-              subtitle: Text(v['person']!, style: const TextStyle(fontSize: 11)),
-              trailing: IconButton(icon: const Icon(Icons.share, size: 18), onPressed: () {}),
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Playing: ${v['title']}'))),
-            ),
-          ]),
-        );
-      },
-    );
+  Widget _videoTabFirebase() {
+    return StreamBuilder<QuerySnapshot>(stream: FirebaseFirestore.instance.collection('videos').orderBy('createdAt', descending: true).snapshots(), builder: (c,snap) {
+      if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+      if (snap.data!.docs.isEmpty) return _videoTabDemo();
+      return ListView.builder(padding: const EdgeInsets.all(12), itemCount: snap.data!.docs.length, itemBuilder: (c,i) {
+        var d = snap.data!.docs[i].data() as Map<String,dynamic>;
+        return Card(child: ListTile(leading: const Icon(Icons.video_library, color: Color(0xFF065F46)), title: Text(d['title']??'Video', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), subtitle: Text(d['url']??'', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10)), trailing: IconButton(icon: const Icon(Icons.play_arrow), onPressed: () {})));
+      });
+    });
   }
 
-  Widget _audioTab() {
-    final audios = [
-      {'title': 'Surah Al-Baqarah - Hifz', 'person': 'Hafiz: Bilal - P7', 'juz': 'Juz 1', 'duration': '10:20'},
-      {'title': 'Quran Tafsir - Ayatul Kursi', 'person': 'Sheikh: Quran Tafsir Teacher', 'juz': 'Tafsir', 'duration': '15:00'},
-      {'title': 'Tajwid - Makharij', 'person': 'Ustadha: Tajwid Class', 'juz': 'Tajwid', 'duration': '08:30'},
-      {'title': 'Hadith - 40 Nawawi', 'person': 'Tarbiah Hadith Teacher', 'juz': 'Hadith', 'duration': '06:15'},
-      {'title': 'Nasheed - Salaama Anthem', 'person': 'All Students', 'juz': 'Nasheed', 'duration': '04:00'},
-      {'title': 'Adhan - Dhuhr', 'person': 'Muadhin: Staff', 'juz': 'Adhan', 'duration': '02:30'},
-    ];
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: audios.length,
-      itemBuilder: (c,i) {
-        final a = audios[i];
-        return Card(
-          child: ListTile(
-            leading: Container(width: 50, height: 50, decoration: BoxDecoration(color: const Color(0xFF065F46).withOpacity(0.15), borderRadius: BorderRadius.circular(8)), child: const Icon(Icons.audiotrack, color: Color(0xFF065F46))),
-            title: Text(a['title']!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-            subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(a['person']!, style: const TextStyle(fontSize: 11)),
-              const SizedBox(height: 2),
-              Row(children: [
-                Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), decoration: BoxDecoration(color: Colors.green[50], borderRadius: BorderRadius.circular(10)), child: Text(a['juz']!, style: TextStyle(fontSize: 10, color: Colors.green[800]))),
-                const SizedBox(width: 8),
-                Text(a['duration']!, style: const TextStyle(fontSize: 10, color: Colors.black45)),
-              ]),
-            ]),
-            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-              IconButton(icon: const Icon(Icons.play_arrow, color: Color(0xFF065F46)), onPressed: () => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Playing audio: ${a['title']}')))),
-              IconButton(icon: const Icon(Icons.share, size: 16), onPressed: () {}),
-            ]),
-          ),
-        );
-      },
-    );
+  Widget _audioTabFirebase() {
+    return StreamBuilder<QuerySnapshot>(stream: FirebaseFirestore.instance.collection('audios').orderBy('createdAt', descending: true).snapshots(), builder: (c,snap) {
+      if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+      if (snap.data!.docs.isEmpty) return _audioTabDemo();
+      return ListView.builder(padding: const EdgeInsets.all(12), itemCount: snap.data!.docs.length, itemBuilder: (c,i) {
+        var d = snap.data!.docs[i].data() as Map<String,dynamic>;
+        return Card(child: ListTile(leading: const Icon(Icons.audiotrack, color: Color(0xFF065F46)), title: Text(d['title']??'Audio', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), subtitle: Text(d['url']??'', maxLines: 1, style: const TextStyle(fontSize: 10)), trailing: IconButton(icon: const Icon(Icons.play_arrow), onPressed: () {})));
+      });
+    });
   }
 
+  Widget _videoTabDemo() {
+    final videos = [{'title': 'Quran Hifz - Juz Amma', 'person': 'Ahmed P5'}, {'title': 'Science Experiment', 'person': 'Ms Sarah'}, {'title': 'School Assembly', 'person': 'All Students'}];
+    return ListView.builder(padding: const EdgeInsets.all(12), itemCount: videos.length, itemBuilder: (c,i) => Card(child: ListTile(leading: Container(width: 50, height: 50, color: Colors.black87, child: const Icon(Icons.play_circle, color: Colors.white)), title: Text(videos[i]['title']!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)), subtitle: Text(videos[i]['person']!, style: const TextStyle(fontSize: 11)))));
+  }
+  Widget _audioTabDemo() {
+    final audios = [{'title': 'Surah Baqarah', 'person': 'Bilal P7'}, {'title': 'Tafsir Ayatul Kursi', 'person': 'Sheikh'}, {'title': 'Nasheed Salaama', 'person': 'All'}];
+    return ListView.builder(padding: const EdgeInsets.all(12), itemCount: audios.length, itemBuilder: (c,i) => Card(child: ListTile(leading: const Icon(Icons.audiotrack, color: Color(0xFF065F46)), title: Text(audios[i]['title']!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)), subtitle: Text(audios[i]['person']!, style: const TextStyle(fontSize: 11)))));
+  }
   Widget _peopleTab() {
-    final people = [
-      {'name': 'Students (1,250)', 'count': '1,250 videos/audios', 'icon': Icons.school, 'color': Colors.blue},
-      {'name': 'Secular Teachers (20)', 'count': 'English, Math, Science, SST', 'icon': Icons.menu_book, 'color': Colors.orange},
-      {'name': 'Theology Teachers (15)', 'count': 'Quran Hifz/Tafsir/Tajwid, Fiqh, Lugha, Tarbiah Tauhid/Siirah/Hadith', 'icon': Icons.auto_stories, 'color': const Color(0xFF065F46)},
-      {'name': 'OTHER Staff (10)', 'count': 'Cook, Guard, Cleaner, Driver, Matron', 'icon': Icons.badge, 'color': Colors.brown},
-      {'name': 'Parents (890)', 'count': 'Feedback audios, Meetings', 'icon': Icons.family_restroom, 'color': Colors.purple},
-    ];
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: people.length,
-      itemBuilder: (c,i) {
-        final p = people[i];
-        return Card(
-          child: ExpansionTile(
-            leading: CircleAvatar(backgroundColor: (p['color'] as Color).withOpacity(0.15), child: Icon(p['icon'] as IconData, color: p['color'] as Color, size: 20)),
-            title: Text(p['name'] as String, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-            subtitle: Text(p['count'] as String, style: const TextStyle(fontSize: 11)),
-            children: [
-              ListTile(leading: const Icon(Icons.video_library, size: 18), title: const Text('Videos', style: TextStyle(fontSize: 12)), trailing: const Text('12', style: TextStyle(fontSize: 12)), onTap: () {}),
-              ListTile(leading: const Icon(Icons.audiotrack, size: 18), title: const Text('Audios', style: TextStyle(fontSize: 12)), trailing: const Text('25', style: TextStyle(fontSize: 12)), onTap: () {}),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showUploadDialog() {
-    showDialog(context: context, builder: (c) => AlertDialog(
-      title: const Text('Upload Media'),
-      content: const Text('Choose: Video (MP4) or Audio (MP3) for Student/Teacher/OTHER Staff'),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(c), child: const Text('Cancel')),
-        ElevatedButton(onPressed: () { Navigator.pop(c); ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Open gallery - Upload to Firebase Storage'))); }, child: const Text('Pick File')),
-      ],
-    ));
+    return ListView(padding: const EdgeInsets.all(12), children: const [
+      ListTile(leading: CircleAvatar(child: Icon(Icons.school)), title: Text('Students 1,250 - Video+Audio'), subtitle: Text('Hifz, Secular lessons')),
+      ListTile(leading: CircleAvatar(child: Icon(Icons.menu_book)), title: Text('Secular Teachers 20'), subtitle: Text('English Math Science SST')),
+      ListTile(leading: CircleAvatar(child: Icon(Icons.auto_stories)), title: Text('Theology Teachers 15'), subtitle: Text('Quran Hifz/Tafsir/Tajwid, Fiqh, Lugha, Tarbiah Tauhid/Siirah/Hadith')),
+      ListTile(leading: CircleAvatar(child: Icon(Icons.badge)), title: Text('OTHER Staff 10'), subtitle: Text('Cook Guard Cleaner Driver Matron')),
+      ListTile(leading: CircleAvatar(child: Icon(Icons.family_restroom)), title: Text('Parents 890'), subtitle: Text('Feedback audios')),
+    ]);
   }
 }
