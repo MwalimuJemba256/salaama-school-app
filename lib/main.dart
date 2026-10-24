@@ -12,7 +12,8 @@ import 'screens/timetable_screen.dart';
 import 'screens/teacher_dashboard.dart';
 import 'screens/students_list_screen.dart';
 import 'screens/admin_dashboard_screen.dart';
-import 'screens/school_media_screen.dart'; // <-- NEW MEDIA IMPORT
+import 'screens/school_media_screen.dart'; // <-- MEDIA IMPORT
+import 'screens/fees_receipt_screen.dart'; // <-- FEES RECEIPT IMPORT NEW
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,7 +71,7 @@ class SalaamaApp extends StatelessWidget {
             }
             return MaterialPageRoute(builder: (_) => const LoginScreen());
 
-          // ===== 12 CARDS + MEDIA CENTER =====
+          // ===== 12 CARDS + MEDIA + FEES RECEIPT =====
           case '/staff_tab':
             return MaterialPageRoute(builder: (_) => const StaffTabScreen());
           case '/classes':
@@ -82,15 +83,15 @@ class SalaamaApp extends StatelessWidget {
           case '/tahfiizu':
             return MaterialPageRoute(builder: (_) => const PlaceholderScreen(title: 'Tahfiizu - Qur\'an', subtitle: 'Juz 1-30 Tracking\nQuran: Hifz / Tafsir / Tajwid\nHifz Certificate ممتاز', color: Color(0xFF065F46)));
           case '/fees':
-            return MaterialPageRoute(builder: (_) => const PlaceholderScreen(title: 'Fees - Payments', subtitle: 'Bursar - UGX 45M\nReceipt PDF EN/AR + Share\nManaged by Admin', color: Colors.green));
+            return MaterialPageRoute(builder: (_) => const FeesReceiptScreen()); // <-- NOW REAL FEES RECEIPT WITH PDF EN/AR + SHARE
           case '/cashflow':
             return MaterialPageRoute(builder: (_) => const PlaceholderScreen(title: 'Cashflow - Income', subtitle: 'Income + Expense + Balance\nDaily, Monthly Reports\nAdmin Only', color: Colors.purple));
           case '/chat':
             return MaterialPageRoute(builder: (_) => const PlaceholderScreen(title: 'Chat - Staff+Parent', subtitle: 'Admin ↔ Teachers ↔ Parents\nWhatsApp style\nManaged by Admin', color: Color(0xFF1E40AF)));
           case '/notices':
-            return MaterialPageRoute(builder: (_) => const SchoolMediaScreen()); // <-- NOW MEDIA + NOTICES TOGETHER
+            return MaterialPageRoute(builder: (_) => const SchoolMediaScreen()); // Media + Notices together
           case '/school_media':
-            return MaterialPageRoute(builder: (_) => const SchoolMediaScreen()); // <-- NEW VIDEO/AUDIO ROUTE
+            return MaterialPageRoute(builder: (_) => const SchoolMediaScreen()); // Video + Audio Firebase Upload
           case '/settings':
             return MaterialPageRoute(builder: (_) => const PlaceholderScreen(title: 'Settings - School Info', subtitle: '8 Roles:\nAdmin, Head Teacher, DOS, Bursar\nTeacher, Tahfiizu, Parent, OTHER Staff\nAll Managed by Admin', color: Colors.grey));
           case '/admin_dashboard':
@@ -150,7 +151,7 @@ class StaffTabScreen extends StatelessWidget {
   }
 }
 
-// ===== PLACEHOLDER FOR ALL NEW CARDS - NO CRASH =====
+// ===== PLACEHOLDER FOR OTHER CARDS =====
 class PlaceholderScreen extends StatelessWidget {
   final String title;
   final String subtitle;
