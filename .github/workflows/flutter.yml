@@ -1,0 +1,47 @@
+name: Salaama Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          
+      - name: Get packages
+        run: flutter pub get
+        
+      - name: Analyze
+        run: flutter analyze
+        
+      - name: Run Tests
+        run: flutter test
+        
+      - name: Build APK
+        run: flutter build apk --release
+        
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: salaama-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  firebase-deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Deploy to Firebase
+        run: |
+          npm install -g firebase-tools
+          firebase deploy --token ${{ secrets.FIREBASE_TOKEN }}
