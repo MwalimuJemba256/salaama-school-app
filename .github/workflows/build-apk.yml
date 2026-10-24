@@ -1,15 +1,19 @@
-name: Build Salaama APK - FINAL FINAL
+name: Salaama School APK Build
 
 on:
   push:
+    branches: [ main, master ]
+  pull_request:
     branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -20,80 +24,33 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
           flutter-version: '3.22.0'
+          channel: 'stable'
+          cache: true
 
-      - name: Install dependencies
+      - name: Flutter clean
+        run: flutter clean
+
+      - name: Get dependencies
         run: flutter pub get
 
-      - name: Fix Missing LaunchTheme + Icons
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq imagemagick
-          
-          echo "1. Creating LaunchTheme styles..."
-          mkdir -p android/app/src/main/res/values
-          mkdir -p android/app/src/main/res/values-night
-          
-          cat > android/app/src/main/res/values/styles.xml << 'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
-                  <item name="android:windowBackground">@drawable/launch_background</item>
-              </style>
-              <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-                  <item name="android:windowBackground">?android:windowBackground</item>
-              </style>
-          </resources>
-          EOF
-          
-          cat > android/app/src/main/res/values-night/styles.xml << 'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-              <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
-                  <item name="android:windowBackground">@drawable/launch_background</item>
-              </style>
-              <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
-                  <item name="android:windowBackground">?android:windowBackground</item>
-              </style>
-          </resources>
-          EOF
-          
-          echo "2. Creating launch_background..."
-          mkdir -p android/app/src/main/res/drawable
-          cat > android/app/src/main/res/drawable/launch_background.xml << 'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-              <item android:drawable="@android:color/white" />
-          </layer-list>
-          EOF
-          
-          echo "3. Creating correct size icons..."
-          mkdir -p android/app/src/main/res/mipmap-mdpi
-          mkdir -p android/app/src/main/res/mipmap-hdpi
-          mkdir -p android/app/src/main/res/mipmap-xhdpi
-          mkdir -p android/app/src/main/res/mipmap-xxhdpi
-          mkdir -p android/app/src/main/res/mipmap-xxxhdpi
-          
-          convert assets/images/icon.png -resize 48x48 android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-          convert assets/images/icon.png -resize 72x72 android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-          convert assets/images/icon.png -resize 96x96 android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          convert assets/images/icon.png -resize 144x144 android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          convert assets/images/icon.png -resize 192x192 android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          
-          cp android/app/src/main/res/mipmap-mdpi/ic_launcher.png android/app/src/main/res/mipmap-mdpi/launcher_icon.png
-          cp android/app/src/main/res/mipmap-hdpi/ic_launcher.png android/app/src/main/res/mipmap-hdpi/launcher_icon.png
-          cp android/app/src/main/res/mipmap-xhdpi/ic_launcher.png android/app/src/main/res/mipmap-xhdpi/launcher_icon.png
-          cp android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxhdpi/launcher_icon.png
-          cp android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxxhdpi/launcher_icon.png
-          
-          echo "All fixed!"
+      - name: Build APK Release
+        run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Build APK
-        run: flutter build apk --release
-
-      - name: Upload APK
+      # ===== FIXED v4 - WAS v3 DEPRECATED =====
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Salaama-APK-FINAL-WORKING
+          name: salaama-school-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Build App Bundle (AAB) for Play Store
+        run: flutter build appbundle --release
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: salaama-school-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
