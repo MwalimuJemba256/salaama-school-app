@@ -29,9 +29,9 @@ dependencies:
   screenshot: ^2.1.0
 
   # ===== SCHOOL MEDIA - VIDEO PANEL + AUDIO FOR ALL PEOPLE =====
-  video_player: ^2.8.0
-  chewie: ^1.8.0
-  audioplayers: ^6.0.0
+  video_player: ^2.8.2
+  chewie: ^1.8.1
+  audioplayers: 5.2.1
   file_picker: ^8.0.0+1
 
 dev_dependencies:
