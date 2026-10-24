@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'screens/splash_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(); // Firebase init
+  
+  // Try Firebase, but don't crash if fails - Fixes white screen!
+  try {
+    await Firebase.initializeApp();
+    debugPrint("✅ Firebase initialized");
+  } catch (e) {
+    debugPrint("⚠️ Firebase failed but app will continue: $e");
+  }
+  
   runApp(const SalaamaApp());
 }
 
@@ -14,27 +22,16 @@ class SalaamaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Salaama Muslim Junior School',
       debugShowCheckedModeBanner: false,
+      title: 'Salaama Muslim Junior School',
       theme: ThemeData(
-        primaryColor: const Color(0xFF0D47A1),
-        scaffoldBackgroundColor: const Color(0xFFF5F7FB),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF0D47A1),
-          foregroundColor: Colors.white,
-          elevation: 0,
-          centerTitle: true,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF0D47A1),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        ),
+        primaryColor: const Color(0xFF0D6FB7),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0D6FB7)),
+        scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      home: const SplashScreen(), // <-- START WITH SPLASH + LOGO
+      // Always show login, never white screen
+      home: const LoginScreen(),
     );
   }
 }
