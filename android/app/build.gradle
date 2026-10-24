@@ -25,7 +25,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.salaama.schoolapp"
-    compileSdk 34
+    compileSdk 35
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -44,7 +44,7 @@ android {
     defaultConfig {
         applicationId "com.salaama.schoolapp"
         minSdk 21
-        targetSdk 34
+        targetSdk 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -61,4 +61,3 @@ flutter {
 }
 
 dependencies {}
-apply plugin: 'com.google.gms.google-services'
