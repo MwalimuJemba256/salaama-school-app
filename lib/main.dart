@@ -12,6 +12,7 @@ import 'screens/timetable_screen.dart';
 import 'screens/teacher_dashboard.dart';
 import 'screens/students_list_screen.dart';
 import 'screens/admin_dashboard_screen.dart';
+import 'screens/school_media_screen.dart'; // <-- NEW MEDIA IMPORT
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,7 +70,7 @@ class SalaamaApp extends StatelessWidget {
             }
             return MaterialPageRoute(builder: (_) => const LoginScreen());
 
-          // ===== 12 CARDS FROM YOUR 2 PHOTOS =====
+          // ===== 12 CARDS + MEDIA CENTER =====
           case '/staff_tab':
             return MaterialPageRoute(builder: (_) => const StaffTabScreen());
           case '/classes':
@@ -87,7 +88,9 @@ class SalaamaApp extends StatelessWidget {
           case '/chat':
             return MaterialPageRoute(builder: (_) => const PlaceholderScreen(title: 'Chat - Staff+Parent', subtitle: 'Admin ↔ Teachers ↔ Parents\nWhatsApp style\nManaged by Admin', color: Color(0xFF1E40AF)));
           case '/notices':
-            return MaterialPageRoute(builder: (_) => const PlaceholderScreen(title: 'Notices - News', subtitle: 'School News EN + عربي\nEvents, Holidays\nAdmin Posting', color: Color(0xFF0284C7)));
+            return MaterialPageRoute(builder: (_) => const SchoolMediaScreen()); // <-- NOW MEDIA + NOTICES TOGETHER
+          case '/school_media':
+            return MaterialPageRoute(builder: (_) => const SchoolMediaScreen()); // <-- NEW VIDEO/AUDIO ROUTE
           case '/settings':
             return MaterialPageRoute(builder: (_) => const PlaceholderScreen(title: 'Settings - School Info', subtitle: '8 Roles:\nAdmin, Head Teacher, DOS, Bursar\nTeacher, Tahfiizu, Parent, OTHER Staff\nAll Managed by Admin', color: Colors.grey));
           case '/admin_dashboard':
