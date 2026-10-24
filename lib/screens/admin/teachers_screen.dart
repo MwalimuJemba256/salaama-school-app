@@ -1,157 +1,101 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import '../../widgets/salaama_app_bar.dart';
 
-class TeachersScreen extends StatelessWidget {
+class TeachersScreen extends StatefulWidget {
   const TeachersScreen({super.key});
+  @override
+  State<TeachersScreen> createState() => _TeachersScreenState();
+}
+
+class _TeachersScreenState extends State<TeachersScreen> {
+  String filter = "All";
+  final cats = ["All", "Teaching", "Non-Teaching"];
+  final teachingCats = ["All Teaching", "Secular", "Theology", "Tahfiizu Sheikh"];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const SalaamaAppBar(title: "Teachers", backgroundColor: Color(0xFF2E7D32)),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF2E7D32),
-        child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () => _showAddDialog(context),
-      ),
-      body: StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('teachers').orderBy('createdAt', descending: true).snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-          final docs = snapshot.data!.docs;
-          if (docs.isEmpty) return const Center(child: Text("No teachers yet. Click + to add!"));
-          return ListView.builder(
-            itemCount: docs.length,
-            padding: const EdgeInsets.all(12),
-            itemBuilder: (context, i) {
-              final data = docs[i].data();
-              return Card(
-                child: ListTile(
-                  leading: CircleAvatar(backgroundColor: const Color(0xFF2E7D32), child: Text((data['name'] ?? 'T')[0], style: const TextStyle(color: Colors.white))),
-                  title: Text(data['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text("${data['subject'] ?? ''} | ${data['phone'] ?? ''}\n${data['email'] ?? ''}"),
-                  isThreeLine: true,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => docs[i].reference.delete()),
-                    ],
-                  ),
-                ),
+      appBar: const SalaamaAppBar(title: "Staff Management", backgroundColor: Color(0xFF2E7D32)),
+      floatingActionButton: FloatingActionButton(backgroundColor: const Color(0xFF2E7D32), onPressed: _showAddDialog, child: const Icon(Icons.add, color: Colors.white)),
+      body: Column(children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.all(8),
+          child: Row(children: cats.map((c) => Padding(padding: const EdgeInsets.only(right: 6), child: ChoiceChip(label: Text(c), selected: filter == c, onSelected: (_) => setState(() => filter = c)))).toList()),
+        ),
+        Expanded(
+          child: StreamBuilder(
+            stream: FirebaseFirestore.instance.collection('teachers').orderBy('createdAt', descending: true).snapshots(),
+            builder: (context, snap) {
+              if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+              var docs = snap.data!.docs;
+              if (filter != "All") docs = docs.where((d) => d['staffCategory'] == filter).toList();
+              return ListView.builder(
+                itemCount: docs.length,
+                itemBuilder: (context, i) {
+                  final data = docs[i].data();
+                  return Card(child: ListTile(
+                    leading: CircleAvatar(backgroundColor: _getColor(data['teachingType']), child: Text((data['name']?[0] ?? 'T'), style: const TextStyle(color: Colors.white))),
+                    title: Text("${data['name']} - ${data['teachingType'] ?? data['staffCategory']}"),
+                    subtitle: Text("${data['subject'] ?? ''} | ${data['phone'] ?? ''}\n${data['staffCategory']} ${data['teachingType'] != null ? '- ${data['teachingType']}' : ''}"),
+                    trailing: IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => docs[i].reference.delete()),
+                  ));
+                },
               );
             },
-          );
-        },
-      ),
+          ),
+        ),
+      ]),
     );
   }
 
-  void _showAddDialog(BuildContext context) {
-    final nameCtrl = TextEditingController();
-    final subjectCtrl = TextEditingController(text: "Mathematics");
-    final phoneCtrl = TextEditingController();
-    final emailCtrl = TextEditingController();
-    final salaryCtrl = TextEditingController();
+  Color _getColor(String? type) {
+    if (type == "Tahfiizu Sheikh") return const Color(0xFF00695C);
+    if (type == "Theology") return const Color(0xFF4A148C);
+    if (type == "Secular") return Colors.blue;
+    return Colors.green;
+  }
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Add Teacher"),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Full Name *", border: OutlineInputBorder())),
-              const SizedBox(height: 10),
-              TextField(controller: subjectCtrl, decoration: const InputDecoration(labelText: "Subject (Math, English, Quran)", border: OutlineInputBorder())),
-              const SizedBox(height: 10),
-              TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: "Phone Number", border: OutlineInputBorder())),
-              const SizedBox(height: 10),
-              TextField(controller: emailCtrl, decoration: const InputDecoration(labelText: "Login Email (teacher@salaama.com)", border: OutlineInputBorder())),
-              const SizedBox(height: 10),
-              TextField(controller: salaryCtrl, decoration: const InputDecoration(labelText: "Salary UGX", border: OutlineInputBorder()), keyboardType: TextInputType.number),
-            ],
-          ),
-        ),
+  void _showAddDialog() {
+    final nameCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
+    final subjectCtrl = TextEditingController();
+    String staffCat = "Teaching";
+    String teachingType = "Secular";
+
+    showDialog(context: context, builder: (_) => StatefulBuilder(builder: (context, setSt) {
+      return AlertDialog(
+        title: const Text("Add Staff - Unlimited"),
+        content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: "Full Name", border: OutlineInputBorder())),
+          const SizedBox(height: 8),
+          DropdownButtonFormField(value: staffCat, decoration: const InputDecoration(labelText: "Staff Category", border: OutlineInputBorder()), items: ["Teaching", "Non-Teaching"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(), onChanged: (v) => setSt(() => staffCat = v!)),
+          const SizedBox(height: 8),
+          if (staffCat == "Teaching")
+            DropdownButtonFormField(value: teachingType, decoration: const InputDecoration(labelText: "Teaching Type", border: OutlineInputBorder()), items: ["Secular", "Theology", "Tahfiizu Sheikh"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(), onChanged: (v) => setSt(() => teachingType = v!)),
+          const SizedBox(height: 8),
+          TextField(controller: subjectCtrl, decoration: InputDecoration(labelText: staffCat == "Teaching" ? (teachingType == "Tahfiizu Sheikh" ? "Halaqa/Class" : "Subject") : "Role (Cook, Guard, etc)", border: const OutlineInputBorder())),
+          const SizedBox(height: 8),
+          TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: "Phone", border: OutlineInputBorder())),
+        ])),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2E7D32)),
-            onPressed: () async {
-              if (nameCtrl.text.trim().isEmpty) return;
-              try {
-                // 1. FIXED: Create teacher account WITHOUT logging out admin
-                String? teacherUid;
-                if (emailCtrl.text.trim().isNotEmpty) {
-                  try {
-                    // Use secondary Firebase app so admin stays logged in
-                    FirebaseApp secondaryApp = await Firebase.initializeApp(
-                      name: 'secondary-${DateTime.now().millisecondsSinceEpoch}',
-                      options: Firebase.app().options,
-                    );
-                    UserCredential cred = await FirebaseAuth.instanceFor(app: secondaryApp)
-                        .createUserWithEmailAndPassword(
-                            email: emailCtrl.text.trim(),
-                            password: "salaama123");
-                    teacherUid = cred.user?.uid;
-                    await secondaryApp.delete();
-                  } catch (e) {
-                    debugPrint("Auth create error (may already exist): $e");
-                  }
-                }
-                
-                // 2. Add to teachers collection - LIMITLESS
-                await FirebaseFirestore.instance.collection('teachers').add({
-                  'name': nameCtrl.text.trim(),
-                  'subject': subjectCtrl.text.trim(),
-                  'phone': phoneCtrl.text.trim(),
-                  'email': emailCtrl.text.trim(),
-                  'salary': salaryCtrl.text.trim(),
-                  'uid': teacherUid ?? '',
-                  'createdAt': FieldValue.serverTimestamp(),
-                });
-
-                // 3. Add to users collection for Role based rules (staff)
-                if (teacherUid != null) {
-                  await FirebaseFirestore.instance.collection('users').doc(teacherUid).set({
-                    'email': emailCtrl.text.trim(),
-                    'name': nameCtrl.text.trim(),
-                    'role': 'staff',
-                    'subject': subjectCtrl.text.trim(),
-                    'phone': phoneCtrl.text.trim(),
-                    'createdAt': FieldValue.serverTimestamp(),
-                  }, SetOptions(merge: true));
-                } else if (emailCtrl.text.trim().isNotEmpty) {
-                  // Fallback if UID not got
-                  await FirebaseFirestore.instance.collection('users').doc(emailCtrl.text.trim()).set({
-                    'email': emailCtrl.text.trim(),
-                    'name': nameCtrl.text.trim(),
-                    'role': 'staff',
-                    'subject': subjectCtrl.text.trim(),
-                    'phone': phoneCtrl.text.trim(),
-                    'createdAt': FieldValue.serverTimestamp(),
-                  }, SetOptions(merge: true));
-                }
-
-                if (!context.mounted) return;
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Teacher Added! Email: ${emailCtrl.text.trim()} | Pass: salaama123"),
-                    backgroundColor: Colors.green,
-                    duration: const Duration(seconds: 4),
-                  ),
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red));
-              }
-            },
-            child: const Text("Save", style: TextStyle(color: Colors.white)),
-          ),
+          ElevatedButton(onPressed: () async {
+            if (nameCtrl.text.isEmpty) return;
+            await FirebaseFirestore.instance.collection('teachers').add({
+              'name': nameCtrl.text.trim(),
+              'phone': phoneCtrl.text.trim(),
+              'subject': subjectCtrl.text.trim(),
+              'staffCategory': staffCat,
+              'teachingType': staffCat == "Teaching" ? teachingType : null,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+            if (!context.mounted) return;
+            Navigator.pop(context);
+          }, child: const Text("Save")),
         ],
-      ),
-    );
+      );
+    }));
   }
 }
