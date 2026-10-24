@@ -9,197 +9,76 @@ class TahfiizuScreen extends StatefulWidget {
 }
 
 class _TahfiizuScreenState extends State<TahfiizuScreen> {
-  String _filterType = "All";
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const SalaamaAppBar(
-        title: "Tahfiizu",
-        backgroundColor: Color(0xFF00695C),
-),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF00695C),
-        child: const Icon(Icons.add, color: Colors.white),
-        onPressed: () => _showAddDialog(),
-      ),
-      body: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            color: const Color(0xFFE0F2F1),
-            child: Row(
-              children: [
-                const Icon(Icons.menu_book, color: Color(0xFF00695C)),
-                const SizedBox(width: 8),
-                const Expanded(child: Text("Sabaq = New | Sabqi = Recent Revision | Manzil = Old Revision", style: TextStyle(fontSize: 11))),
-                DropdownButton<String>(
-                  value: _filterType,
-                  items: ["All", "Sabaq", "Sabqi", "Manzil"].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                  onChanged: (v) => setState(() => _filterType = v!),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: StreamBuilder(
-              stream: FirebaseFirestore.instance.collection('tahfiizu_records').orderBy('createdAt', descending: true).snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                var docs = snapshot.data!.docs;
-                if (_filterType != "All") {
-                  docs = docs.where((d) => d.data()['type'] == _filterType).toList();
-                }
-                if (docs.isEmpty) return const Center(child: Text("No Tahfiizu records yet\nClick + to add Sabaq", textAlign: TextAlign.center));
-
-                return ListView.builder(
-                  padding: const EdgeInsets.all(12),
-                  itemCount: docs.length,
-                  itemBuilder: (context, i) {
-                    final data = docs[i].data();
-                    final type = data['type'] ?? 'Sabaq';
-                    Color typeColor = const Color(0xFF00695C);
-                    if (type == "Sabaq") typeColor = Colors.green;
-                    if (type == "Sabqi") typeColor = Colors.orange;
-                    if (type == "Manzil") typeColor = Colors.blue;
-
-                    return Card(
-                      child: ListTile(
-                        leading: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(color: typeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                          child: Text(type, style: TextStyle(color: typeColor, fontWeight: FontWeight.bold, fontSize: 11)),
-                        ),
-                        title: Text(data['studentName'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text(
-                          "Surah ${data['surah'] ?? ''} | Ayah ${data['fromAyah'] ?? ''}-${data['toAyah'] ?? ''}\nJuz ${data['juz'] ?? ''} | Grade: ${data['grade'] ?? 'A'}\nSheikh: ${data['sheikhName'] ?? ''} | ${data['date'] ?? ''}",
-                        ),
-                        isThreeLine: true,
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                          onPressed: () => docs[i].reference.delete(),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: const SalaamaAppBar(title: "Tahfiizu - Quran", backgroundColor: Color(0xFF00695C), bottom: TabBar(tabs: [Tab(text: "Darsu"), Tab(text: "Darsu Sitta (6)"), Tab(text: "Muraaji'a")])),
+        floatingActionButton: FloatingActionButton(backgroundColor: const Color(0xFF00695C), onPressed: _addTahfiizu, child: const Icon(Icons.add, color: Colors.white)),
+        body: TabBarView(children: [
+          _buildList("Darsu"),
+          _buildList("Darsu Sitta"),
+          _buildList("Muraaji'a"),
+        ]),
       ),
     );
   }
 
-  void _showAddDialog() {
-    final studentCtrl = TextEditingController();
-    final surahCtrl = TextEditingController(text: "Al-Fatiha");
-    final fromAyahCtrl = TextEditingController(text: "1");
-    final toAyahCtrl = TextEditingController(text: "7");
-    final juzCtrl = TextEditingController(text: "1");
-    final sheikhCtrl = TextEditingController();
-    String selectedType = "Sabaq";
-    String selectedGrade = "Excellent";
-
-    final surahs = ["Al-Fatiha", "Al-Baqarah", "Aal-Imran", "An-Nisa", "Al-Maida", "Al-An'am", "Al-A'raf", "Al-Anfal", "At-Tauba", "Yunus", "Yasin", "Al-Kahf", "Ar-Rahman", "Al-Waqia", "Al-Mulk", "Juz Amma"];
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Add Tahfiizu Record"),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              StreamBuilder(
-                stream: FirebaseFirestore.instance.collection('students').snapshots(),
-                builder: (context, snap) {
-                  final students = snap.data?.docs.map((d) => d.data()['name'] as String).toList() ?? [];
-                  return DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: "Student *", border: OutlineInputBorder()),
-                    items: students.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                    onChanged: (v) => studentCtrl.text = v!,
-                  );
-                },
-              ),
-              const SizedBox(height: 10),
-              StatefulBuilder(
-                builder: (context, setState2) => DropdownButtonFormField<String>(
-                  value: selectedType,
-                  decoration: const InputDecoration(labelText: "Type", border: OutlineInputBorder()),
-                  items: ["Sabaq", "Sabqi", "Manzil"].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                  onChanged: (v) => setState2(() => selectedType = v!),
-                ),
-              ),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: "Surah", border: OutlineInputBorder()),
-                items: surahs.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                onChanged: (v) => surahCtrl.text = v!,
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Expanded(child: TextField(controller: fromAyahCtrl, decoration: const InputDecoration(labelText: "From Ayah", border: OutlineInputBorder()), keyboardType: TextInputType.number)),
-                  const SizedBox(width: 8),
-                  Expanded(child: TextField(controller: toAyahCtrl, decoration: const InputDecoration(labelText: "To Ayah", border: OutlineInputBorder()), keyboardType: TextInputType.number)),
-                  const SizedBox(width: 8),
-                  Expanded(child: TextField(controller: juzCtrl, decoration: const InputDecoration(labelText: "Juz", border: OutlineInputBorder()), keyboardType: TextInputType.number)),
-                ],
-              ),
-              const SizedBox(height: 10),
-              StreamBuilder(
-                stream: FirebaseFirestore.instance.collection('teachers').snapshots(),
-                builder: (context, snap) {
-                  final teachers = snap.data?.docs.map((d) => d.data()['name'] as String).toList() ?? [];
-                  return DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(labelText: "Sheikh / Teacher", border: OutlineInputBorder()),
-                    items: teachers.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                    onChanged: (v) => sheikhCtrl.text = v!,
-                  );
-                },
-              ),
-              const SizedBox(height: 10),
-              StatefulBuilder(
-                builder: (context, setState2) => DropdownButtonFormField<String>(
-                  value: selectedGrade,
-                  decoration: const InputDecoration(labelText: "Grade", border: OutlineInputBorder()),
-                  items: ["Excellent", "Very Good", "Good", "Needs Revision"].map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
-                  onChanged: (v) => setState2(() => selectedGrade = v!),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00695C)),
-            onPressed: () async {
-              if (studentCtrl.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Select student!")));
-                return;
-              }
-              await FirebaseFirestore.instance.collection('tahfiizu_records').add({
-                'studentName': studentCtrl.text,
-                'type': selectedType,
-                'surah': surahCtrl.text,
-                'fromAyah': fromAyahCtrl.text,
-                'toAyah': toAyahCtrl.text,
-                'juz': juzCtrl.text,
-                'sheikhName': sheikhCtrl.text,
-                'grade': selectedGrade,
-                'date': "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
-                'createdAt': FieldValue.serverTimestamp(),
-              });
-              if (!context.mounted) return;
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("MashaAllah! Tahfiizu Recorded"), backgroundColor: Colors.green));
-            },
-            child: const Text("Save", style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
+  Widget _buildList(String type) {
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance.collection('tahfiizu').where('type', isEqualTo: type).orderBy('createdAt', descending: true).snapshots(),
+      builder: (context, snap) {
+        if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+        final docs = snap.data!.docs;
+        if (docs.isEmpty) return Center(child: Text("No $type yet"));
+        return ListView.builder(itemCount: docs.length, itemBuilder: (context, i) {
+          final d = docs[i].data();
+          return Card(child: ListTile(
+            leading: CircleAvatar(backgroundColor: const Color(0xFF00695C), child: Text(type[0], style: const TextStyle(color: Colors.white))),
+            title: Text("${d['studentName']} - ${d['surah']}"),
+            subtitle: Text("Sheikh: ${d['sheikh']} | ${d['ayah']} | Grade: ${d['grade']}\nDate: ${d['date'] ?? ''}"),
+            trailing: Text(d['type'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
+          ));
+        });
+      },
     );
+  }
+
+  void _addTahfiizu() {
+    final studentCtrl = TextEditingController();
+    final surahCtrl = TextEditingController();
+    final ayahCtrl = TextEditingController();
+    final sheikhCtrl = TextEditingController();
+    final gradeCtrl = TextEditingController();
+    String type = "Darsu";
+
+    showDialog(context: context, builder: (_) => StatefulBuilder(builder: (context, setSt) {
+      return AlertDialog(title: const Text("Add Tahfiizu Record"), content: SingleChildScrollView(child: Column(children: [
+        DropdownButtonFormField(value: type, decoration: const InputDecoration(labelText: "Type", border: OutlineInputBorder()), items: ["Darsu", "Darsu Sitta", "Muraaji'a", "Competition", "Test"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(), onChanged: (v) => setSt(() => type = v!)),
+        const SizedBox(height: 8),
+        TextField(controller: studentCtrl, decoration: const InputDecoration(labelText: "Student Name", border: OutlineInputBorder())),
+        const SizedBox(height: 8),
+        TextField(controller: surahCtrl, decoration: const InputDecoration(labelText: "Surah / Juz", border: OutlineInputBorder())),
+        const SizedBox(height: 8),
+        TextField(controller: ayahCtrl, decoration: const InputDecoration(labelText: "Ayah / Pages e.g. 1-10", border: OutlineInputBorder())),
+        const SizedBox(height: 8),
+        TextField(controller: sheikhCtrl, decoration: const InputDecoration(labelText: "Sheikh Name", border: OutlineInputBorder())),
+        const SizedBox(height: 8),
+        TextField(controller: gradeCtrl, decoration: const InputDecoration(labelText: "Grade: Mumtaz/Jayyid etc", border: OutlineInputBorder())),
+      ])), actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
+        ElevatedButton(onPressed: () async {
+          await FirebaseFirestore.instance.collection('tahfiizu').add({
+            'studentName': studentCtrl.text, 'surah': surahCtrl.text, 'ayah': ayahCtrl.text,
+            'sheikh': sheikhCtrl.text, 'grade': gradeCtrl.text, 'type': type,
+            'date': DateTime.now().toString().substring(0,10),
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+          if (!context.mounted) return;
+          Navigator.pop(context);
+        }, child: const Text("Save"))
+      ]);
+    }));
   }
 }
