@@ -17,7 +17,29 @@ class SalaamaAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text(title),
+      title: Row(
+        children: [
+          // Logo - if you don't have logo yet, it shows Icon
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.cover,
+                errorBuilder: (c, e, s) => Icon(Icons.school, color: backgroundColor),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+        ],
+      ),
       backgroundColor: backgroundColor,
       foregroundColor: Colors.white,
       bottom: bottom,
@@ -31,7 +53,6 @@ class SalaamaAppBar extends StatelessWidget implements PreferredSizeWidget {
       );
 }
 
-// Old name - keep for compatibility so dashboard doesn't break
 class SalaamaDashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String role;
   final Color backgroundColor;
@@ -47,7 +68,25 @@ class SalaamaDashboardAppBar extends StatelessWidget implements PreferredSizeWid
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Text("$role - Salaama"),
+      title: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.cover,
+                errorBuilder: (c, e, s) => Icon(Icons.school, color: backgroundColor),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text("$role - Salaama", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        ],
+      ),
       backgroundColor: backgroundColor,
       foregroundColor: Colors.white,
       actions: actions,
