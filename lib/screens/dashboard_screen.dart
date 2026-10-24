@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/salaama_app_bar.dart';
 import 'login_screen.dart';
 import 'admin/students_screen.dart';
@@ -30,11 +31,42 @@ class DashboardScreen extends StatelessWidget {
         backgroundColor: appColor,
         actions: [IconButton(icon: const Icon(Icons.logout), onPressed: () async { await FirebaseAuth.instance.signOut(); if (!context.mounted) return; Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())); })],
       ),
-      body: SingleChildScrollView(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Assalamu Alaikum!", style: TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text("SALAAMA MUSLIM JUNIOR SCHOOL - All Modules Ready!", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))])), const SizedBox(height: 20), Text("$role Dashboard", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)), const SizedBox(height: 12), GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisSpacing: 12, mainAxisSpacing: 12, childAspectRatio: 1.15, children: _getCardsForRole(context)), const SizedBox(height: 20), const Center(child: Text("© 2026 Salaama - DESTINED TO SUCCEED", style: TextStyle(color: Colors.grey, fontSize: 11)))])),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Container(width: double.infinity, padding: const EdgeInsets.all(20), decoration: BoxDecoration(gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), borderRadius: BorderRadius.circular(16)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text("Assalamu Alaikum!", style: TextStyle(color: Colors.white70)), Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const SizedBox(height: 8), const Text("SALAAMA MUSLIM JUNIOR SCHOOL", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))])),
+          const SizedBox(height: 20),
+          Text("$role Dashboard", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('students').snapshots(),
+            builder: (context, studentSnap) {
+              int studentCount = studentSnap.data?.docs.length ?? 0;
+              return StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('teachers').snapshots(),
+                builder: (context, teacherSnap) {
+                  int teacherCount = teacherSnap.data?.docs.length ?? 0;
+                  return GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1.15,
+                    children: _getCardsForRole(context, studentCount, teacherCount),
+                  );
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          const Center(child: Text("© 2026 Salaama - DESTINED TO SUCCEED", style: TextStyle(color: Colors.grey, fontSize: 11)))
+        ]),
+      ),
     );
   }
 
-  List<Widget> _getCardsForRole(BuildContext context) {
+  List<Widget> _getCardsForRole(BuildContext context, int studentCount, int teacherCount) {
     if (role == "Parent") {
       return [
         _buildCard(context, Icons.child_care, "My Children", "View", const Color(0xFF6A1B9A), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
@@ -46,8 +78,8 @@ class DashboardScreen extends StatelessWidget {
       ];
     }
     return [
-      _buildCard(context, Icons.people, "Students", "450 Students", Colors.blue, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()))),
-      _buildCard(context, Icons.school, "Teachers", "25 Staff", Colors.green, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TeachersScreen()))),
+      _buildCard(context, Icons.people, "Students", "$studentCount Students", Colors.blue, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()))),
+      _buildCard(context, Icons.school, "Teachers", "$teacherCount Teachers - Unlimited", Colors.green, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TeachersScreen()))),
       _buildCard(context, Icons.class_, "Classes", "Baby-P7", Colors.orange, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassesScreen()))),
       _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TahfiizuScreen()))),
       _buildCard(context, Icons.payments, "Fees", "Payments", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FeesScreen()))),
