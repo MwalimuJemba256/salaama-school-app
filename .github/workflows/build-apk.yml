@@ -1,4 +1,4 @@
-name: Build Salaama APK
+name: Build Salaama APK - Manual Icon
 
 on:
   push:
@@ -26,18 +26,21 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Fix iOS folder + Generate Icons
+      - name: MANUALLY SET SALAAMA ICON - 100% WORKS!
         run: |
-          mkdir -p ios/Runner/Assets.xcassets/AppIcon.appiconset
-          echo '{"images":[],"info":{"author":"xcode","version":1}}' > ios/Runner/Assets.xcassets/AppIcon.appiconset/Contents.json
-          dart run flutter_launcher_icons
-          ls android/app/src/main/res/mipmap-*/ic_launcher.png || true
+          echo "Copying Salaama icon to all mipmap folders..."
+          for folder in android/app/src/main/res/mipmap-*; do
+            echo "Copying to $folder"
+            cp assets/images/icon.png $folder/ic_launcher.png
+            cp assets/images/icon.png $folder/launcher_icon.png || true
+          done
+          ls -lh android/app/src/main/res/mipmap-hdpi/ic_launcher.png
 
-      - name: Build APK
-        run: flutter build apk --release
+      - name: Build APK with Salaama Icon
+        run: flutter build apk --release --no-tree-shake-icons
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Salaama-School-APK-Final
+          name: Salaama-School-APK-ICON-FIXED
           path: build/app/outputs/flutter-apk/app-release.apk
