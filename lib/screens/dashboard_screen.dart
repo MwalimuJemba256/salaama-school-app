@@ -1,160 +1,200 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../widgets/salaama_app_bar.dart';
-import 'login_screen.dart';
-import 'admin/students_screen.dart';
-import 'admin/teachers_screen.dart';
-import 'admin/classes_screen.dart';
-import 'admin/tahfiizu_screen.dart';
-import 'admin/fees_screen.dart';
-import 'admin/attendance_screen.dart';
-import 'admin/exams_screen.dart';
-import 'admin/media_screen.dart';
-import 'admin/notice_screen.dart';
-import 'admin/documents_screen.dart';
-import 'admin/chat_screen.dart';
-import 'admin/cashflow_screen.dart';
-import 'parent/parent_home.dart';
+import '../../widgets/salaama_app_bar.dart';
 
-class DashboardScreen extends StatelessWidget {
-  final String role;
-  const DashboardScreen({super.key, this.role = "Admin"});
-  
+// Import all screens
+import 'students_screen.dart';
+import 'teachers_screen.dart';
+import 'classes_screen.dart';
+import 'fees_screen.dart';
+import 'tahfiizu_screen.dart';
+import 'attendance_screen.dart';
+import 'timetable_screen.dart';
+import 'exams_screen.dart';
+import 'chat_screen.dart';
+import 'cashflow_screen.dart';
+import 'settings_screen.dart';
+import 'notices_screen.dart';
+import '../login_screen.dart';
+
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
-    final userEmail = FirebaseAuth.instance.currentUser?.email ?? "Admin";
-    Color appColor = const Color(0xFF0D47A1);
-    if (role == "Teacher") appColor = const Color(0xFF2E7D32);
-    if (role == "Parent") appColor = const Color(0xFF6A1B9A);
-    
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-      appBar: SalaamaDashboardAppBar(
-        role: role,
-        backgroundColor: appColor,
+      appBar: SalaamaAppBar(
+        title: "Salaama Admin",
+        backgroundColor: const Color(0xFF0D47A1),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout), 
-            onPressed: () async { 
-              await FirebaseAuth.instance.signOut(); 
-              if (!context.mounted) return; 
-              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())); 
-            }
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              if (!context.mounted) return;
+              Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (r) => false);
+            },
           )
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16), 
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-            width: double.infinity, 
-            padding: const EdgeInsets.all(20), 
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [appColor, appColor.withOpacity(0.7)]), 
-              borderRadius: BorderRadius.circular(16)
-            ), 
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text("Assalamu Alaikum $role!", style: const TextStyle(color: Colors.white70)),
-              Text(userEmail, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8), 
-              Text(
-                role == "Teacher" ? "TEACHER PORTAL - Manage Your Classes" : 
-                role == "Parent" ? "PARENT PORTAL - Track Your Child" : 
-                "SALAAMA MUSLIM JUNIOR SCHOOL - All Modules Ready!", 
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)
-              )
-            ])
-          ), 
-          const SizedBox(height: 20), 
-          Text("$role Dashboard", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)), 
-          const SizedBox(height: 12), 
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('students').snapshots(),
-            builder: (context, studentSnap) {
-              int studentCount = studentSnap.data?.docs.length ?? 0;
-              return StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('teachers').snapshots(),
-                builder: (context, teacherSnap) {
-                  int teacherCount = teacherSnap.data?.docs.length ?? 0;
-                  return GridView.count(
-                    crossAxisCount: 2, 
-                    shrinkWrap: true, 
-                    physics: const NeverScrollableScrollPhysics(), 
-                    crossAxisSpacing: 12, 
-                    mainAxisSpacing: 12, 
-                    childAspectRatio: 1.15, 
-                    children: _getCardsForRole(context, studentCount, teacherCount)
-                  );
-                },
-              );
-            },
-          ),
-          const SizedBox(height: 20), 
-          const Center(child: Text("© 2026 Salaama - DESTINED TO SUCCEED", style: TextStyle(color: Colors.grey, fontSize: 11)))
-        ])
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // STATS ROW
+            StreamBuilder(
+              stream: FirebaseFirestore.instance.collection('students').snapshots(),
+              builder: (context, snap) {
+                final studentsCount = snap.data?.docs.length ?? 0;
+                return StreamBuilder(
+                  stream: FirebaseFirestore.instance.collection('teachers').snapshots(),
+                  builder: (context, snap2) {
+                    final teachersCount = snap2.data?.docs.length ?? 0;
+                    return Row(
+                      children: [
+                        _statCard("Students", "$studentsCount", Colors.blue, Icons.people),
+                        const SizedBox(width: 10),
+                        _statCard("Staff", "$teachersCount", Colors.green, Icons.badge),
+                        const SizedBox(width: 10),
+                        StreamBuilder(
+                          stream: FirebaseFirestore.instance.collection('cashflow').where('type', isEqualTo: 'Income').snapshots(),
+                          builder: (context, cashSnap) {
+                            double total = 0;
+                            if (cashSnap.hasData) {
+                              for (var d in cashSnap.data!.docs) total += (d['amount'] ?? 0);
+                            }
+                            return _statCard("Income", "UGX ${total.toInt()}", Colors.purple, Icons.wallet);
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+            const SizedBox(height: 18),
+
+            const Text("ACADEMICS", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey, letterSpacing: 1.2)),
+            const SizedBox(height: 8),
+            GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 0.95,
+              children: [
+                _buildCard(context, Icons.people_alt, "Students", "Manage All", const Color(0xFF1565C0), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()))),
+                _buildCard(context, Icons.badge_rounded, "Staff", "Teaching/Non\nSecular/Theo", const Color(0xFF2E7D32), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TeachersScreen()))),
+                _buildCard(context, Icons.class_, "Classes", "Streams", const Color(0xFFEF6C00), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassesScreen()))),
+                _buildCard(context, Icons.how_to_reg, "Attendance", "Daily", const Color(0xFF00838F), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()))),
+                _buildCard(context, Icons.schedule, "Timetable", "Lessons", const Color(0xFF6A1B9A), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TimetableScreen()))),
+                _buildCard(context, Icons.grade, "Exams", "Results", const Color(0xFFC62828), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamsScreen()))),
+              ],
+            ),
+            const SizedBox(height: 18),
+
+            const Text("TAHFIIZU - QURAN", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey, letterSpacing: 1.2)),
+            const SizedBox(height: 8),
+            GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 0.95,
+              children: [
+                _buildCard(context, Icons.menu_book_rounded, "Tahfiizu", "Darsu\nDarsu Sitta\nMuraaji'a", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TahfiizuScreen()))),
+                _buildCard(context, Icons.payments, "Fees", "Structure\nPayments", const Color(0xFF2E7D32), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FeesScreen()))),
+                _buildCard(context, Icons.account_balance_wallet, "Cashflow", "Income\nExpense", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CashflowScreen()))),
+              ],
+            ),
+            const SizedBox(height: 18),
+
+            const Text("COMMUNICATION", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.grey, letterSpacing: 1.2)),
+            const SizedBox(height: 8),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 1.8,
+              children: [
+                _buildWideCard(context, Icons.chat_bubble_rounded, "Salaama Chat", "Staff • Parents • General", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatScreen()))),
+                _buildWideCard(context, Icons.campaign_rounded, "Notices", "Announcements", const Color(0xFF0277BD), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticesScreen()))),
+              ],
+            ),
+            const SizedBox(height: 18),
+
+            _buildWideCard(context, Icons.settings, "Settings", "School Info", Colors.blueGrey, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen())), isFull: true),
+
+            const SizedBox(height: 30),
+            const Center(child: Text("SALAAMA MUSLIM JUNIOR SCHOOL\nDESTINED TO SUCCEED", textAlign: TextAlign.center, style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold))),
+            const SizedBox(height: 10),
+          ],
+        ),
       ),
     );
   }
 
-  List<Widget> _getCardsForRole(BuildContext context, int studentCount, int teacherCount) {
-    // PARENT - 6 cards + Chat
-    if (role == "Parent") {
-      return [
-        _buildCard(context, Icons.child_care, "My Children", "View", const Color(0xFF6A1B9A), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
-        _buildCard(context, Icons.campaign, "Notices", "News", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()))),
-        _buildCard(context, Icons.chat, "Chat", "Chat with Admin", Colors.blue, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatScreen()))),
-        _buildCard(context, Icons.menu_book, "Tahfiizu", "Quran Progress", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
-        _buildCard(context, Icons.quiz, "Exams", "Results", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
-        _buildCard(context, Icons.payments, "Fees", "My Balance", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ParentChildrenScreen()))),
-        _buildCard(context, Icons.photo_library, "Media", "Photos/Videos", const Color(0xFF37474F), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MediaScreen()))),
-      ];
-    }
-    
-    // TEACHER - 8 cards - NO Fees, NO Cashflow, NO Teachers list
-    if (role == "Teacher") {
-      return [
-        _buildCard(context, Icons.people, "My Students", "$studentCount Students", Colors.blue, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()))),
-        _buildCard(context, Icons.fact_check, "Attendance", "Mark Daily", Colors.teal, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()))),
-        _buildCard(context, Icons.quiz, "Exams", "Enter Marks", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamsScreen()))),
-        _buildCard(context, Icons.menu_book, "Tahfiizu", "Darsu/Sitta", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TahfiizuScreen()))),
-        _buildCard(context, Icons.chat, "Chat", "Staff Chat", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatScreen()))),
-        _buildCard(context, Icons.class_, "My Classes", "Baby-P7", Colors.orange, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassesScreen()))),
-        _buildCard(context, Icons.campaign, "Notices", "School News", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()))),
-        _buildCard(context, Icons.photo_library, "Media", "Upload Work", const Color(0xFF37474F), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MediaScreen()))),
-      ];
-    }
-
-    // ADMIN (Amin) - FULL 12 cards - Unlimited Staff + Cashflow
-    return [
-      _buildCard(context, Icons.people, "Students", "$studentCount Students", Colors.blue, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentsScreen()))),
-      _buildCard(context, Icons.school, "Staff", "$teacherCount Staff - Unlimited", Colors.green, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TeachersScreen()))),
-      _buildCard(context, Icons.chat, "Chatting", "Staff & Parents", const Color(0xFF25D366), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatScreen()))),
-      _buildCard(context, Icons.account_balance_wallet, "Cashflow", "Income/Expense", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CashflowScreen()))),
-      _buildCard(context, Icons.class_, "Classes", "Baby-P7", Colors.orange, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassesScreen()))),
-      _buildCard(context, Icons.menu_book, "Tahfiizu", "Darsu/Sitta/Muraaji'a", const Color(0xFF00695C), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TahfiizuScreen()))),
-      _buildCard(context, Icons.payments, "Fees", "Payments", Colors.purple, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const FeesScreen()))),
-      _buildCard(context, Icons.fact_check, "Attendance", "Daily", Colors.teal, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()))),
-      _buildCard(context, Icons.quiz, "Exams", "Results", Colors.red, () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExamsScreen()))),
-      _buildCard(context, Icons.photo_library, "Media", "Videos/Audio", const Color(0xFF37474F), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MediaScreen()))),
-      _buildCard(context, Icons.campaign, "Notices", "Board", const Color(0xFF283593), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()))),
-      _buildCard(context, Icons.picture_as_pdf, "Documents", "PNG Reports", const Color(0xFF1565C0), () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DocumentsScreen()))),
-    ];
+  Widget _statCard(String title, String value, Color color, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)]),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 6),
+          Text(value, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: color), maxLines: 1, overflow: TextOverflow.ellipsis),
+          Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        ]),
+      ),
+    );
   }
 
   Widget _buildCard(BuildContext context, IconData icon, String title, String subtitle, Color color, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap, 
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.all(14), 
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)]), 
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 26)), 
-          const Spacer(), 
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)), 
-          Text(subtitle, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600))
-        ])
-      ) 
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))]),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle), child: Icon(icon, color: color, size: 26)),
+          const SizedBox(height: 8),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), textAlign: TextAlign.center),
+          const SizedBox(height: 2),
+          Text(subtitle, style: const TextStyle(fontSize: 10, color: Colors.grey), textAlign: TextAlign.center),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildWideCard(BuildContext context, IconData icon, String title, String subtitle, Color color, VoidCallback onTap, {bool isFull = false}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        width: isFull ? double.infinity : null,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)]),
+        padding: const EdgeInsets.all(14),
+        child: Row(children: [
+          Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: color, size: 24)),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+            Text(subtitle, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+          ])),
+          const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+        ]),
+      ),
     );
   }
 }
