@@ -10,14 +10,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   String selectedRole = "Admin";
   final List<String> roles = [
-    "Admin",
-    "Head Teacher", 
-    "D.O.S",
-    "Bursar",
-    "Teacher",
-    "Tahfiizu Sheikh",
-    "Parent"
-  ];
+  'Admin',
+  'Head Teacher',
+  'D.O.S',
+  'Bursar',
+  'Teacher',
+  'Tahfiizu Sheikh',
+  'Parent',
+  'OTHER',
+];
 
   @override
   Widget build(BuildContext context) {
