@@ -10,51 +10,146 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  String chatType = "Staff Chat";
+  String selectedType = "All";
+  final List<String> types = ["All", "Staff Chat", "Parents", "General"];
+  final TextEditingController msgCtrl = TextEditingController();
+  final ScrollController scrollCtrl = ScrollController();
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        appBar: SalaamaAppBar(title: "Salaama Chat", backgroundColor: const Color(0xFF283593), bottom: TabBar(onTap: (i) => setState(() => chatType = ["Staff Chat", "Admin-Parent", "All Staff"][i]), tabs: const [Tab(text: "Staff"), Tab(text: "Parents"), Tab(text: "General")])),
-        body: Column(children: [
-          Expanded(child: _buildMessages()),
-          _buildInput(),
-        ]),
-      ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
+      appBar: const SalaamaAppBar(title: "Salaama Chat", backgroundColor: Color(0xFF283593)),
+      body: Column(children: [
+        // Filter Chips
+        Container(
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: types.map((t) => Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: Text(t),
+                  selected: selectedType == t,
+                  selectedColor: const Color(0xFF283593).withOpacity(0.15),
+                  onSelected: (_) => setState(() => selectedType = t),
+                ),
+              )).toList(),
+            ),
+          ),
+        ),
+        // Messages
+        Expanded(child: _buildMessages()),
+        // Input
+        _buildInput(),
+      ]),
     );
   }
 
   Widget _buildMessages() {
     return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('chats').where('chatType', isEqualTo: chatType).orderBy('time', descending: true).snapshots(),
+      // NO where filter - to avoid index error - filter in code
+      stream: FirebaseFirestore.instance.collection('chats').orderBy('time', descending: true).limit(200).snapshots(),
       builder: (context, snap) {
         if (!snap.hasData) return const Center(child: CircularProgressIndicator());
-        final docs = snap.data!.docs;
-        return ListView.builder(reverse: true, itemCount: docs.length, itemBuilder: (context, i) {
-          final d = docs[i].data();
-          final isMe = d['senderEmail'] == FirebaseAuth.instance.currentUser?.email;
-          return Align(alignment: isMe ? Alignment.centerRight : Alignment.centerLeft, child: Container(margin: const EdgeInsets.all(6), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: isMe ? Colors.blue : Colors.white, borderRadius: BorderRadius.circular(12)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(d['senderEmail'] ?? '', style: TextStyle(fontSize: 10, color: isMe ? Colors.white70 : Colors.grey)), Text(d['message'] ?? '', style: TextStyle(color: isMe ? Colors.white : Colors.black))])) );
-        });
+        var docs = snap.data!.docs;
+        // Filter client-side - NO INDEX NEEDED
+        if (selectedType != "All") {
+          docs = docs.where((d) => (d.data()['chatType'] ?? 'General') == selectedType).toList();
+        }
+        if (docs.isEmpty) return Center(child: Text("No messages in $selectedType yet\nStart chatting!", textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)));
+
+        return ListView.builder(
+          reverse: true,
+          controller: scrollCtrl,
+          padding: const EdgeInsets.all(12),
+          itemCount: docs.length,
+          itemBuilder: (context, i) {
+            final data = docs[i].data();
+            final isMe = data['senderEmail'] == FirebaseAuth.instance.currentUser?.email;
+            final time = (data['time'] as Timestamp?)?.toDate();
+            final timeStr = time != null ? "${time.hour}:${time.minute.toString().padLeft(2, '0')}" : "";
+
+            return Align(
+              alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+                decoration: BoxDecoration(
+                  color: isMe ? const Color(0xFF283593) : Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: const Radius.circular(16),
+                    topRight: const Radius.circular(16),
+                    bottomLeft: Radius.circular(isMe ? 16 : 4),
+                    bottomRight: Radius.circular(isMe ? 4 : 16),
+                  ),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
+                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  if (!isMe) Text(data['senderName'] ?? data['senderEmail'] ?? 'User', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF283593))),
+                  Text(data['message'] ?? '', style: TextStyle(fontSize: 14, color: isMe ? Colors.white : Colors.black87)),
+                  const SizedBox(height: 2),
+                  Row(mainAxisSize: MainAxisSize.min, children: [
+                    Text("${data['chatType'] ?? 'General'} • $timeStr", style: TextStyle(fontSize: 9, color: isMe ? Colors.white70 : Colors.grey)),
+                  ]),
+                ]),
+              ),
+            );
+          },
+        );
       },
     );
   }
 
   Widget _buildInput() {
-    final ctrl = TextEditingController();
-    return Padding(padding: const EdgeInsets.all(8), child: Row(children: [
-      Expanded(child: TextField(controller: ctrl, decoration: const InputDecoration(hintText: "Type message...", border: OutlineInputBorder()))),
-      IconButton(icon: const Icon(Icons.send, color: Colors.blue), onPressed: () async {
-        if (ctrl.text.trim().isEmpty) return;
-        await FirebaseFirestore.instance.collection('chats').add({
-          'message': ctrl.text.trim(),
-          'senderEmail': FirebaseAuth.instance.currentUser?.email ?? 'Admin',
-          'chatType': chatType,
-          'time': FieldValue.serverTimestamp(),
-        });
-        ctrl.clear();
-      })
-    ]));
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.all(10),
+      child: Row(children: [
+        Expanded(
+          child: TextField(
+            controller: msgCtrl,
+            decoration: InputDecoration(
+              hintText: "Message to $selectedType...",
+              filled: true,
+              fillColor: const Color(0xFFF5F7FB),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide.none),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        CircleAvatar(
+          backgroundColor: const Color(0xFF283593),
+          child: IconButton(icon: const Icon(Icons.send, color: Colors.white, size: 20), onPressed: _sendMessage),
+        )
+      ]),
+    );
+  }
+
+  Future<void> _sendMessage() async {
+    if (msgCtrl.text.trim().isEmpty) return;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    // Get user name from users collection
+    String senderName = user.email ?? 'User';
+    try {
+      final uDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (uDoc.exists) senderName = uDoc.data()?['name'] ?? senderName;
+    } catch (_) {}
+
+    await FirebaseFirestore.instance.collection('chats').add({
+      'message': msgCtrl.text.trim(),
+      'senderEmail': user.email,
+      'senderName': senderName,
+      'senderUid': user.uid,
+      'chatType': selectedType == "All" ? "General" : selectedType,
+      'time': FieldValue.serverTimestamp(),
+    });
+    msgCtrl.clear();
   }
 }
